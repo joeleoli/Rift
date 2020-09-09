@@ -1,0 +1,4 @@
+allprojects {
+    group 'net.evilblock.rift'
+    version '1.1'
+}

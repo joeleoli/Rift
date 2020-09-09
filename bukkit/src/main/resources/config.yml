@@ -1,0 +1,14 @@
+# Make sure to check your instance configuration before starting the server.
+# Two instances of Rift using the same server-id will cause data persistence issues.
+instance:
+  proxy-id: 'North-America'
+  server-id: 'Hub-01'
+
+# The interval (in seconds) in which this instance of Rift broadcasts updates to other Rift instances.
+broadcast-update-interval: 3
+
+# Prevents players from being able to join queues from this server
+disable-queues: false
+
+# Prevents default players from being able to join a queue via command
+disable-queue-join-command: true
