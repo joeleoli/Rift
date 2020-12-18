@@ -5,7 +5,10 @@ import net.evilblock.cubed.CubedOptions
 import net.evilblock.cubed.command.CommandHandler
 import net.evilblock.cubed.util.Reflection
 import net.evilblock.cubed.util.bukkit.Tasks
+import net.evilblock.permissions.rank.Rank
+import net.evilblock.permissions.rank.RankHandler
 import net.evilblock.rift.Rift
+import net.evilblock.rift.bukkit.command.ReloadCommand
 import net.evilblock.rift.bukkit.queue.command.QueueJoinCommand
 import net.evilblock.rift.server.Server
 import net.evilblock.rift.server.ServerHandler
@@ -15,7 +18,14 @@ import net.evilblock.rift.bukkit.queue.command.QueueLeaveCommand
 import net.evilblock.rift.bukkit.queue.command.parameter.QueueParameterType
 import net.evilblock.rift.bukkit.queue.event.PlayerJoinQueueEvent
 import net.evilblock.rift.bukkit.queue.event.PlayerLeaveQueueEvent
+import net.evilblock.rift.bukkit.server.command.ServerJumpCommand
+import net.evilblock.rift.bukkit.server.command.ServerMetadataEditorCommand
+import net.evilblock.rift.bukkit.server.command.parameter.ServerParameterType
 import net.evilblock.rift.bukkit.server.task.ServerUpdateTask
+import net.evilblock.rift.bukkit.spoof.SpoofHandler
+import net.evilblock.rift.bukkit.spoof.command.SpoofPauseCommand
+import net.evilblock.rift.bukkit.spoof.command.SpoofStatusCommand
+import net.evilblock.rift.bukkit.spoof.command.SpoofToggleCommand
 import net.evilblock.rift.plugin.Plugin
 import net.evilblock.rift.queue.Queue
 import net.evilblock.rift.queue.QueueEntry
@@ -33,31 +43,46 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
     companion object {
         @JvmStatic
         lateinit var instance: RiftBukkitPlugin
-    }
 
-    val enabledAt = System.currentTimeMillis()
+        @JvmStatic
+        val enabledAt: Long = System.currentTimeMillis()
+    }
 
     override fun onEnable() {
         instance = this
 
-        Rift(this).initialLoad()
-
-        // setup our configuration, and stop the onEnable process if we've generated a config for the first time
-        // this allows the server operator a chance to configure their Rift instance before data is mutated
         if (!setupConfiguration()) {
             return
         }
 
         Cubed.instance.configureOptions(CubedOptions(requireRedis = true))
 
+        Rift(this).initialLoad()
+        SpoofHandler.initialLoad()
+
+        CommandHandler.registerClass(ReloadCommand.javaClass)
+        CommandHandler.registerClass(ServerDumpCommand.javaClass)
+        CommandHandler.registerClass(ServerJumpCommand.javaClass)
+        CommandHandler.registerClass(ServerMetadataEditorCommand.javaClass)
         CommandHandler.registerClass(QueueEditorCommand.javaClass)
         CommandHandler.registerClass(QueueJoinCommand.javaClass)
         CommandHandler.registerClass(QueueLeaveCommand.javaClass)
-        CommandHandler.registerClass(ServerDumpCommand.javaClass)
-        CommandHandler.registerParameterType(Queue::class.java, QueueParameterType)
+        CommandHandler.registerClass(SpoofPauseCommand.javaClass)
+        CommandHandler.registerClass(SpoofStatusCommand.javaClass)
+        CommandHandler.registerClass(SpoofToggleCommand.javaClass)
+        CommandHandler.registerParameterType(Server::class.java, ServerParameterType())
+        CommandHandler.registerParameterType(Queue::class.java, QueueParameterType())
 
         // save and broadcast this server's data on an interval defined in the config
-        Tasks.asyncTimer(ServerUpdateTask(), 20L, 20L * readBroadcastInterval())
+        Tasks.asyncTimer(ServerUpdateTask(), 0L, 20L * readBroadcastInterval())
+    }
+
+    override fun onDisable() {
+        SpoofHandler.onDisable()
+    }
+
+    override fun getDirectory(): File {
+        return dataFolder
     }
 
     private fun setupConfiguration(): Boolean {
@@ -89,6 +114,10 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
         server.shutdown()
     }
 
+    fun readProxyId(): String {
+        return config.getString("instance.proxy-id")
+    }
+
     fun readServerId(): String {
         return config.getString("instance.server-id")
     }
@@ -107,6 +136,74 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
 
     fun readBungeeEnabled(): Boolean {
         return Reflection.getDeclaredField(Reflection.getClassSuppressed("org.spigotmc.SpigotConfig")!!, "bungee")!!.get(null) as Boolean
+    }
+
+    fun readSpoofEnabled(): Boolean {
+        return config.getBoolean("spoof.enabled", false)
+    }
+
+    fun readSpoofPaused(): Boolean {
+        return config.getBoolean("spoof.paused", false)
+    }
+
+    fun readSpoofMultiplier(): Double {
+        return config.getDouble("spoof.multiplier", 2.0)
+    }
+
+    fun readSpoofMin(): Int {
+        return config.getInt("spoof.min", 10)
+    }
+
+    fun readSpoofMax(): Int {
+        return config.getInt("spoof.max", 100)
+    }
+
+    fun readSpoofBuffer(): Int {
+        return config.getInt("spoof.buffer", 25)
+    }
+
+    fun readSpoofInterval(): Long {
+        return config.getLong("spoof.interval", 20)
+    }
+
+    fun readSpoofMinDelay(): Long {
+        return config.getLong("spoof.min-delay", 500L)
+    }
+
+    fun readSpoofMaxDelay(): Long {
+        return config.getLong("spoof.max-delay", 1500L)
+    }
+
+    fun readSpoofStabilize(): Boolean {
+        return config.getBoolean("spoof.stabilize", true)
+    }
+
+    fun readSpoofRanks(): Map<Rank, Double> {
+        return if (config.contains("spoof.realism.rank-assignment")) {
+            hashMapOf<Rank, Double>().also {
+                val section = config.getConfigurationSection("spoof.realism.rank-assignment")
+                for (key in section.getKeys(false)) {
+                    val rank = RankHandler.getRankById(key)
+                    if (rank != null) {
+                        it[rank] = section.getDouble(key)
+                    }
+                }
+            }
+        } else {
+            emptyMap()
+        }
+    }
+
+    fun readSpoofActions(): List<Pair<String, Double>> {
+        return if (config.contains("spoof.realism.actions")) {
+            arrayListOf<Pair<String, Double>>().also {
+                for (map in config.getList("spoof.realism.actions") as List<Map<String, Any>>) {
+                    it.add(Pair(map["command"] as String, map["chance"] as Double))
+                }
+            }
+        } else {
+            emptyList()
+        }
     }
 
     fun getServerInstance(): Optional<Server> {

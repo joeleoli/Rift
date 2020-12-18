@@ -7,7 +7,7 @@ import org.bukkit.ChatColor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
-object QueueParameterType : ParameterType<Queue> {
+class QueueParameterType : ParameterType<Queue> {
 
     override fun transform(sender: CommandSender, source: String): Queue? {
         if (sender is Player && source.equals("self", ignoreCase = true)) {

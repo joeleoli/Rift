@@ -8,7 +8,7 @@ import org.bukkit.entity.Player
 object QueueEditorCommand {
 
     @Command(
-        names = ["queue editor"],
+        names = ["queue editor", "rift queue editor"],
         description = "Opens the queue editor",
         permission = Permissions.QUEUE_EDITOR
     )

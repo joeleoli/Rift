@@ -18,7 +18,10 @@ repositories {
 dependencies {
     implementation project(':common')
     compileOnly 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.61'
-    compileOnly 'net.evilblocke:cubed:1.1'
+    compileOnly 'net.evilblock:cubed:1.1'
+    compileOnly 'net.evilblock.permissions:bukkit:1.1'
+    compileOnly 'com.ngxdev:paper:1.12.2'
+    compileOnly 'com.ngxdev:paper-api:1.12.2'
     compileOnly 'org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT'
     compileOnly 'org.bukkit:bukkit:1.12.2-R0.1-SNAPSHOT'
 }
@@ -55,5 +58,6 @@ publishing {
 
 tasks.withType(Jar) {
     def home = System.properties['user.home']
-    destinationDirectory = file("$home/Desktop/@MineJunkie DEV/shared/global")
+    destinationDirectory = file("$home/Desktop/@MineJunkie DEV/shared")
+//    destinationDirectory = file("$home/Desktop/@MineJunkie DEV/Prison/plugins")
 }

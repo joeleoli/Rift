@@ -10,7 +10,7 @@ object ServerMessages : MessageListener {
 
     private val TYPE = TypeToken.getParameterized(Map::class.java, String::class.java, String::class.java).rawType
 
-    @IncomingMessageHandler(ServerHandler.SERVER_GROUP_UPDATE)
+    @IncomingMessageHandler(ServerHandler.GROUP_UPDATE)
     fun onGroupUpdate(json: JsonObject) {
         val map = Rift.GSON.fromJson<Map<String, String>>(json, TYPE) as Map<String, String>
 

@@ -50,6 +50,10 @@ class RiftProxyPlugin : Plugin(), net.evilblock.rift.plugin.Plugin {
         proxy.scheduler.schedule(this, QueueExpiration, 1L, 1L, TimeUnit.SECONDS)
     }
 
+    override fun getDirectory(): File {
+        return dataFolder
+    }
+
     private fun loadConfig() {
         configuration = ConfigurationProvider.getProvider(YamlConfiguration::class.java).load(File(dataFolder, "config.yml"))
     }

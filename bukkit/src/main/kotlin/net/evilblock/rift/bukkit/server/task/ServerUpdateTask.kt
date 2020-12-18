@@ -22,7 +22,7 @@ class ServerUpdateTask : BukkitRunnable() {
         server.onlineMode = Bukkit.getOnlineMode()
         server.proxied = RiftBukkitPlugin.instance.readBungeeEnabled()
         server.lastHeartbeat = System.currentTimeMillis()
-        server.currentUptime = System.currentTimeMillis() - RiftBukkitPlugin.instance.enabledAt
+        server.currentUptime = System.currentTimeMillis() - RiftBukkitPlugin.enabledAt
         server.currentTps = MinecraftReflection.getTPS()
         server.playerCount = Bukkit.getOnlinePlayers().size
 

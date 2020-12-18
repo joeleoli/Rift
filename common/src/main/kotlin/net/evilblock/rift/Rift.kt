@@ -2,6 +2,7 @@ package net.evilblock.rift
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonParser
 import net.evilblock.rift.server.ServerMessages
 import net.evilblock.rift.server.ServerHandler
 import net.evilblock.pidgin.Pidgin
@@ -14,11 +15,9 @@ import redis.clients.jedis.Jedis
 class Rift(val plugin: Plugin) {
 
     companion object {
-        @JvmStatic
-        lateinit var instance: Rift
-
-        @JvmStatic
-        val GSON: Gson = GsonBuilder().create()
+        @JvmStatic lateinit var instance: Rift
+        @JvmStatic val GSON: Gson = GsonBuilder().create()
+        @JvmStatic val PARSER: JsonParser = JsonParser()
     }
 
     lateinit var pidgin: Pidgin

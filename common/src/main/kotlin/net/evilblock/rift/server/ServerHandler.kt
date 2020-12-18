@@ -1,29 +1,25 @@
 package net.evilblock.rift.server
 
+import com.google.gson.reflect.TypeToken
 import net.evilblock.rift.Rift
 import net.evilblock.pidgin.message.Message
 import java.util.*
 
 object ServerHandler {
 
-    const val SERVER_GROUP_UPDATE = "SERVER_GROUP_UPDATE"
+    private val GROUP_TYPE = object : TypeToken<ServerGroup>() {}.type
+    private val SERVER_TYPE = object : TypeToken<Server>() {}.type
+
+    const val GROUP_UPDATE = "SERVER_GROUP_UPDATE"
     const val SERVER_UPDATE = "SERVER_UPDATE"
 
     val groups: MutableMap<String, ServerGroup> = hashMapOf()
 
-    /**
-     *  The initial load procedure goes as follows:
-     *  1. Load server groups into memory
-     *  2. Load servers and pair them with their assigned group
-     */
     fun initialLoad() {
         loadGroups()
         loadServers()
     }
 
-    /**
-     * Loads the server groups stored in redis into memory.
-     */
     private fun loadGroups() {
         Rift.instance.runRedisCommand { redis ->
             for (groupId in redis.smembers("Rift:ServerGroups")) {
@@ -37,8 +33,8 @@ object ServerHandler {
     /**
      * Gets a copy of all the server groups.
      */
-    fun getGroups(): List<ServerGroup> {
-        return groups.values.toList()
+    fun getGroups(): Collection<ServerGroup> {
+        return groups.values
     }
 
     /**
@@ -49,17 +45,17 @@ object ServerHandler {
     }
 
     /**
-     * Attempts to fetch a [ServerGroup] from redis.
+     * Fetches a [ServerGroup] for the given [groupId].
      */
     fun fetchGroupById(groupId: String): Optional<ServerGroup> {
-        return Optional.ofNullable(Rift.instance.runRedisCommand { client ->
+        return Rift.instance.runRedisCommand { client ->
             val map = client.hgetAll("Rift:ServerGroup:$groupId")
             if (map.isEmpty()) {
-                null
+                Optional.empty()
             } else {
-                ServerGroup(map)
+                Optional.of(ServerGroup(map))
             }
-        })
+        }
     }
 
     /**
@@ -71,7 +67,7 @@ object ServerHandler {
             redis.hmset("Rift:ServerGroup:${group.displayName}", group.toMap())
         }
 
-        Rift.instance.pidgin.sendMessage(Message(SERVER_GROUP_UPDATE, group.toMap()))
+        Rift.instance.pidgin.sendMessage(Message(GROUP_UPDATE, group.toMap()))
     }
 
     /**
@@ -90,7 +86,7 @@ object ServerHandler {
             if (!exists) {
                 saveGroup(group)
 
-                Rift.instance.pidgin.sendMessage(Message(SERVER_GROUP_UPDATE, group.toMap()))
+                Rift.instance.pidgin.sendMessage(Message(GROUP_UPDATE, group.toMap()))
             }
 
             groups[groupId] = group
@@ -103,17 +99,22 @@ object ServerHandler {
      * Loads the servers stored in redis into memory.
      */
     private fun loadServers() {
-        Rift.instance.runRedisCommand { redis ->
-            for (serverId in redis.smembers("Rift:Servers")) {
-                fetchServerById(serverId).ifPresent { server ->
-                    val group = getGroupById(server.group)
-                    if (group.isPresent) {
-                        group.get().servers.add(server)
-                    } else {
-                        loadOrCreateGroup(server.group).servers.add(server)
+        try {
+            Rift.instance.runRedisCommand { redis ->
+                for (serverId in redis.smembers("Rift:Servers")) {
+                    fetchServerById(serverId).ifPresent { server ->
+                        val group = getGroupById(server.group)
+                        if (group.isPresent) {
+                            group.get().servers.add(server)
+                        } else {
+                            loadOrCreateGroup(server.group).servers.add(server)
+                        }
                     }
                 }
             }
+        } catch (e: Exception) {
+            Rift.instance.plugin.getLogger().severe("Failed to load servers!")
+            e.printStackTrace()
         }
     }
 
@@ -125,24 +126,25 @@ object ServerHandler {
     }
 
     /**
-     * Gets a [Server] by the given [serverName] if loaded into memory.
+     * Gets a [Server] for the given [serverName] if loaded into memory.
      */
     fun getServerById(serverName: String, ignoreCase: Boolean = true): Optional<Server> {
-        return Optional.ofNullable(getServers().firstOrNull { server -> server.displayName.equals(serverName, ignoreCase = ignoreCase) })
+        return Optional.ofNullable(getServers().firstOrNull { server -> server.id.equals(serverName, ignoreCase = true)
+                || server.displayName.equals(serverName, ignoreCase = ignoreCase) })
     }
 
     /**
      * Attempts to fetch a [Server] from redis.
      */
     fun fetchServerById(serverId: String): Optional<Server> {
-        return Optional.ofNullable(Rift.instance.runRedisCommand { client ->
+        return Rift.instance.runRedisCommand { client ->
             val map = client.hgetAll("Rift:Server:$serverId")
             if (map.isEmpty()) {
-                null
+                Optional.empty()
             } else {
-                Server(map)
+                Optional.of(Server(map))
             }
-        })
+        }
     }
 
     /**

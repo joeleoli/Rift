@@ -17,7 +17,7 @@ object QueueJoinCommand {
     @JvmStatic
     fun execute(player: Player, @Param(name = "queue") queue: Queue) {
         if (RiftBukkitPlugin.instance.readDisableJoinQueueCommand() && !player.hasPermission("rift.queue.join")) {
-            player.sendMessage("${ChatColor.RED}You aren't allowed to join queues using commands.")
+            player.sendMessage("${ChatColor.RED}You aren't allowed to join queues using commands!")
             return
         }
 

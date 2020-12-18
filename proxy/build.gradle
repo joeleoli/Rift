@@ -54,5 +54,5 @@ publishing {
 
 tasks.withType(Jar) {
     def home = System.properties['user.home']
-    destinationDirectory = file("$home/Desktop/@MineJunkie DEV/shared/proxy")
+    destinationDirectory = file("$home/Desktop/@MineJunkie DEV/shared")
 }

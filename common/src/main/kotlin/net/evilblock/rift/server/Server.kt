@@ -1,7 +1,7 @@
 package net.evilblock.rift.server
 
+import com.google.gson.JsonObject
 import java.util.*
-import kotlin.collections.HashMap
 
 class Server(val id: String, val group: String, val port: Int) {
 
@@ -15,6 +15,8 @@ class Server(val id: String, val group: String, val port: Int) {
     var currentUptime: Long = 0
     var currentTps: Double = 0.toDouble()
     var playerCount: Int = 0
+
+    var configuration: JsonObject = JsonObject()
 
     /**
      * Initializes a [Server] from the given key-specific populated [map].
@@ -95,6 +97,14 @@ class Server(val id: String, val group: String, val port: Int) {
             Optional.of(playerCount)
         } else {
             Optional.empty()
+        }
+    }
+
+    fun getColor(): String {
+        return if (configuration.has("Color")) {
+            configuration.get("Color").asString.replace("&", "§")
+        } else {
+            ""
         }
     }
 
