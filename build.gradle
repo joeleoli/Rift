@@ -1,4 +1,4 @@
 allprojects {
-    group 'net.evilblock.rift'
-    version '1.1'
+    group 'com.minexd.rift'
+    version '1.2'
 }

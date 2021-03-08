@@ -1,7 +1,7 @@
 # Make sure to check your instance configuration before starting the server.
 # Two instances of Rift using the same server-id will cause data persistence issues.
 instance:
-  proxy-id: 'North-America'
+  proxy-id: 'NA'
   server-id: 'Hub-01'
 
 # The interval (in seconds) in which this instance of Rift broadcasts updates to other Rift instances.
@@ -38,7 +38,6 @@ spoof:
       gold: 25.0
       lapis: 30.0
       redstone: 50.0
-      inmate: 50.0
     # Making fake players perform actions
     actions:
       - chance: 100.0
