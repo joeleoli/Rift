@@ -7,7 +7,6 @@ class ServerGroup(val id: String) {
 
     var displayName: String = id
     val servers: MutableSet<Server> = HashSet()
-
     var configuration: JsonObject = JsonObject()
 
     constructor(map: Map<String, String>) : this(map.getValue("ID")) {
@@ -21,6 +20,18 @@ class ServerGroup(val id: String) {
         map["DisplayName"] = displayName
         map["Configuration"] = configuration.toString()
         return map
+    }
+
+    fun getOnlineServers(): List<Server> {
+        return servers.filter { it.isOnline() }
+    }
+
+    fun getOfflineServers(): List<Server> {
+        return servers.filter { !it.isOnline() }
+    }
+
+    fun getPublicServers(): List<Server> {
+        return servers.filter { it.isOnline() && !it.whitelisted }
     }
 
     /**

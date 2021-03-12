@@ -22,10 +22,12 @@ import com.minexd.rift.bukkit.server.command.parameter.ServerParameterType
 import com.minexd.rift.bukkit.server.task.ServerUpdateTask
 import com.minexd.rift.bukkit.spoof.SpoofHandler
 import com.minexd.rift.bukkit.spoof.command.*
+import com.minexd.rift.bukkit.util.Constants
 import com.minexd.rift.plugin.Plugin
 import com.minexd.rift.queue.Queue
 import com.minexd.rift.queue.QueueEntry
 import com.minexd.rift.queue.QueueHandler
+import net.evilblock.cubed.util.bungee.BungeeUtil
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
@@ -262,24 +264,30 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
     }
 
     fun joinQueue(player: Player, queue: Queue) {
+        if (player.isOp || player.hasPermission(com.minexd.rift.bukkit.util.Permissions.SERVER_JUMP)) {
+            player.sendMessage("${Constants.QUEUE_CHAT_PREFIX}${ChatColor.GRAY}Sending you to ${queue.route.displayName}${ChatColor.GRAY}! ${ChatColor.GRAY}(${ChatColor.GREEN}${ChatColor.BOLD}BYPASS${ChatColor.GRAY})")
+            BungeeUtil.sendToServer(player, queue.route.id)
+            return
+        }
+
         if (serverInstance.id == queue.route.id) {
-            player.sendMessage("${ChatColor.RED}${ChatColor.BOLD}QUEUE ${ChatColor.RED}You can't join a queue for a server you're already connected to.")
+            player.sendMessage("${Constants.QUEUE_CHAT_PREFIX}${ChatColor.RED}You're connected to that server!")
             return
         }
 
         if (readDisableQueues()) {
-            player.sendMessage("${ChatColor.RED}${ChatColor.BOLD}QUEUE ${ChatColor.RED}You can't join queues from this server.")
+            player.sendMessage("${Constants.QUEUE_CHAT_PREFIX}${ChatColor.RED}You can't join queues from this server!")
             return
         }
 
         val currentQueue = QueueHandler.getQueueByEntry(player.uniqueId)
         if (currentQueue != null) {
-            player.sendMessage("${ChatColor.RED}${ChatColor.BOLD}QUEUE ${ChatColor.RED}You are already in the ${ChatColor.LIGHT_PURPLE}${ChatColor.BOLD}${currentQueue.route.displayName} ${ChatColor.RED}queue.")
+            player.sendMessage("${Constants.QUEUE_CHAT_PREFIX}${ChatColor.RED}You are already in the ${ChatColor.LIGHT_PURPLE}${ChatColor.BOLD}${currentQueue.route.displayName} ${ChatColor.RED}queue!")
             return
         }
 
         if (!queue.open) {
-            player.sendMessage("${ChatColor.RED}${ChatColor.BOLD}QUEUE ${ChatColor.RED}That queue is currently closed.")
+            player.sendMessage("${Constants.QUEUE_CHAT_PREFIX}${ChatColor.RED}That queue is currently closed!")
             return
         }
 

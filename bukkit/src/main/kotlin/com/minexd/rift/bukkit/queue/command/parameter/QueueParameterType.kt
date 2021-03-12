@@ -1,5 +1,6 @@
 package com.minexd.rift.bukkit.queue.command.parameter
 
+import com.minexd.rift.bukkit.util.Constants
 import net.evilblock.cubed.command.data.parameter.ParameterType
 import com.minexd.rift.queue.Queue
 import com.minexd.rift.queue.QueueHandler
@@ -14,16 +15,15 @@ class QueueParameterType : ParameterType<Queue> {
             val queue = QueueHandler.getQueueByEntry(sender.uniqueId)
 
             if (queue == null) {
-                sender.sendMessage("${ChatColor.RED}${ChatColor.BOLD}QUEUE ${ChatColor.RED}You are not in a queue.")
+                sender.sendMessage("${Constants.QUEUE_CHAT_PREFIX}${ChatColor.RED}You are not in a queue.")
             }
 
             return queue
         }
 
         val queue = QueueHandler.getQueueById(source)
-
         if (queue == null) {
-            sender.sendMessage("${ChatColor.RED}${ChatColor.BOLD}QUEUE ${ChatColor.RED}Couldn't find a queue named `$source`.")
+            sender.sendMessage("${Constants.QUEUE_CHAT_PREFIX}${ChatColor.RED}Couldn't find a queue named `$source`.")
         }
 
         return queue
