@@ -2,6 +2,7 @@ package com.minexd.rift.queue
 
 import net.evilblock.pidgin.message.Message
 import com.minexd.rift.Rift
+import com.minexd.rift.server.ServerHandler
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -61,6 +62,13 @@ object QueueHandler {
     fun fetchQueueById(queueId: String): Queue? {
         return Rift.instance.plugin.getRedis().runRedisCommand { client ->
             val map = client.hgetAll("Rift:Queue:$queueId")
+
+            val route = ServerHandler.getServerById(map.getValue("Route"))
+            if (route == null) {
+                Rift.instance.plugin.getLogger().severe("Failed to load queue $queueId because its route server is not loaded")
+                return@runRedisCommand null
+            }
+
             val queue = if (map.isEmpty()) {
                 null
             } else {
@@ -96,7 +104,7 @@ object QueueHandler {
             redis.del("Rift:Queue:${queue.id}")
         }
 
-        Rift.instance.pidgin.sendMessage(Message(QUEUE_DELETE, mapOf("ID" to queue.id)))
+        Rift.instance.pidgin.sendMessage(Message(QUEUE_DELETE, mapOf("Queue" to queue.id)))
     }
 
     fun getPriority(): MutableMap<String, Int> {

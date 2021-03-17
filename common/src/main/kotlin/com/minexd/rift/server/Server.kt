@@ -4,7 +4,7 @@ import com.google.gson.JsonObject
 import net.evilblock.cubed.serializers.Serializers
 import java.util.*
 
-class Server(val id: String, val group: String, val port: Int) {
+class Server(val id: String, var group: String, var port: Int) {
 
     var displayName: String = id
     var slots: Int = 0
@@ -104,6 +104,10 @@ class Server(val id: String, val group: String, val port: Int) {
         } else {
             Optional.empty()
         }
+    }
+
+    fun isServerFull(): Boolean {
+        return playerCount >= slots
     }
 
     fun getColor(): String {

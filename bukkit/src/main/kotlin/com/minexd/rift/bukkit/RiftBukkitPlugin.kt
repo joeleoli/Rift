@@ -18,6 +18,7 @@ import com.minexd.rift.bukkit.queue.event.PlayerJoinQueueEvent
 import com.minexd.rift.bukkit.queue.event.PlayerLeaveQueueEvent
 import com.minexd.rift.bukkit.server.command.ServerJumpCommand
 import com.minexd.rift.bukkit.server.command.ServerMetadataEditorCommand
+import com.minexd.rift.bukkit.server.command.ServersCommand
 import com.minexd.rift.bukkit.server.command.parameter.ServerParameterType
 import com.minexd.rift.bukkit.server.task.ServerUpdateTask
 import com.minexd.rift.bukkit.spoof.SpoofHandler
@@ -113,13 +114,20 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
     }
 
     private fun loadCommands() {
+        CommandHandler.registerParameterType(Server::class.java, ServerParameterType())
+        CommandHandler.registerParameterType(Queue::class.java, QueueParameterType())
+
         CommandHandler.registerClass(ReloadCommand.javaClass)
+
+        CommandHandler.registerClass(ServersCommand.javaClass)
         CommandHandler.registerClass(ServerDumpCommand.javaClass)
         CommandHandler.registerClass(ServerJumpCommand.javaClass)
         CommandHandler.registerClass(ServerMetadataEditorCommand.javaClass)
+
         CommandHandler.registerClass(QueueEditorCommand.javaClass)
         CommandHandler.registerClass(QueueJoinCommand.javaClass)
         CommandHandler.registerClass(QueueLeaveCommand.javaClass)
+
         CommandHandler.registerClass(SpoofDebugCommand.javaClass)
         CommandHandler.registerClass(SpoofMinCommand.javaClass)
         CommandHandler.registerClass(SpoofMaxCommand.javaClass)
@@ -130,14 +138,6 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
         CommandHandler.registerClass(SpoofStatusCommand.javaClass)
         CommandHandler.registerClass(SpoofToggleCommand.javaClass)
         CommandHandler.registerClass(SpoofToggleCommand.javaClass)
-        CommandHandler.registerParameterType(
-            Server::class.java,
-            ServerParameterType()
-        )
-        CommandHandler.registerParameterType(
-            Queue::class.java,
-            QueueParameterType()
-        )
     }
 
     fun readProxyId(): String {
@@ -265,29 +265,29 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
 
     fun joinQueue(player: Player, queue: Queue) {
         if (player.isOp || player.hasPermission(com.minexd.rift.bukkit.util.Permissions.SERVER_JUMP)) {
-            player.sendMessage("${Constants.QUEUE_CHAT_PREFIX}${ChatColor.GRAY}Sending you to ${queue.route.displayName}${ChatColor.GRAY}! ${ChatColor.GRAY}(${ChatColor.GREEN}${ChatColor.BOLD}BYPASS${ChatColor.GRAY})")
+            player.sendMessage("${Constants.QUEUE_CHAT_PREFIX}${ChatColor.GRAY}Sending you to ${queue.route.getColor()}${queue.route.displayName}${ChatColor.GRAY}!")
             BungeeUtil.sendToServer(player, queue.route.id)
             return
         }
 
         if (serverInstance.id == queue.route.id) {
-            player.sendMessage("${Constants.QUEUE_CHAT_PREFIX}${ChatColor.RED}You're connected to that server!")
+            player.sendMessage("${ChatColor.RED}You're already connected to that server!")
             return
         }
 
         if (readDisableQueues()) {
-            player.sendMessage("${Constants.QUEUE_CHAT_PREFIX}${ChatColor.RED}You can't join queues from this server!")
+            player.sendMessage("${ChatColor.RED}You can't join queues from this server!")
             return
         }
 
         val currentQueue = QueueHandler.getQueueByEntry(player.uniqueId)
         if (currentQueue != null) {
-            player.sendMessage("${Constants.QUEUE_CHAT_PREFIX}${ChatColor.RED}You are already in the ${ChatColor.LIGHT_PURPLE}${ChatColor.BOLD}${currentQueue.route.displayName} ${ChatColor.RED}queue!")
+            player.sendMessage("${ChatColor.RED}You are already in the ${queue.route.getColor()}${queue.route.displayName} ${ChatColor.RED}queue!")
             return
         }
 
         if (!queue.open) {
-            player.sendMessage("${Constants.QUEUE_CHAT_PREFIX}${ChatColor.RED}That queue is currently closed!")
+            player.sendMessage("${ChatColor.RED}That queue is currently closed!")
             return
         }
 

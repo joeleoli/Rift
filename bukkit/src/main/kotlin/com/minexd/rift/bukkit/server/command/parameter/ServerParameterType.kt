@@ -16,15 +16,11 @@ class ServerParameterType : ParameterType<Server> {
         }
 
         val server = ServerHandler.getServerById(source, ignoreCase = true)
-        if (!server.isPresent) {
+        if (server == null) {
             sender.sendMessage("${ChatColor.RED}Couldn't find a server from the input: `${ChatColor.RESET}$source${ChatColor.RED}`")
         }
 
-        return if (server.isPresent) {
-            server.get()
-        } else {
-            null
-        }
+        return server
     }
 
     override fun tabComplete(player: Player, flags: Set<String>, source: String): List<String> {

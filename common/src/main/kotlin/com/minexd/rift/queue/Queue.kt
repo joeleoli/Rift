@@ -22,7 +22,7 @@ class Queue(
     /**
      * Initializes a [Queue] from the given key-specific populated [map].
      */
-    constructor(map: Map<String, String>) : this(map.getValue("ID"), ServerHandler.getServerById(map.getValue("Route")).get()) {
+    constructor(map: Map<String, String>) : this(map.getValue("ID"), ServerHandler.getServerById(map.getValue("Route"))!!) {
         open = map.getValue("Open").toBoolean()
         polling = map.getValue("Polling").toBoolean()
         pollingRate = map.getValue("PollingRate").toDouble()
@@ -130,7 +130,7 @@ class Queue(
             redis.del("Rift:Queue:${id}.Entries")
         }
 
-        Rift.instance.pidgin.sendMessage(Message(QueueHandler.QUEUE_FLUSH, mapOf("ID" to id)))
+        Rift.instance.pidgin.sendMessage(Message(QueueHandler.QUEUE_FLUSH, mapOf("Queue" to id)))
     }
 
     fun canPoll(): Boolean {

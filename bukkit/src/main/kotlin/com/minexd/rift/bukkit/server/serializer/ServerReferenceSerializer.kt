@@ -12,7 +12,7 @@ class ServerReferenceSerializer : JsonSerializer<Server>, JsonDeserializer<Serve
     }
 
     override fun deserialize(json: JsonElement, type: Type, context: JsonDeserializationContext): Server? {
-        return ServerHandler.getServerById(json.asString, true).orElse(null)
+        return ServerHandler.getServerById(json.asString, true)
     }
 
 }

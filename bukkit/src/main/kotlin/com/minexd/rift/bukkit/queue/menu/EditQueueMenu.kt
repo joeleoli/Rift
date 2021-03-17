@@ -6,7 +6,7 @@ import net.evilblock.cubed.menu.menus.ConfirmMenu
 import net.evilblock.cubed.util.math.Numbers
 import net.evilblock.cubed.util.text.TextSplitter
 import net.evilblock.cubed.util.bukkit.Tasks
-import com.minexd.rift.bukkit.server.menu.SelectRouteMenu
+import com.minexd.rift.bukkit.server.menu.SelectServerMenu
 import com.minexd.rift.queue.Queue
 import com.minexd.rift.queue.QueueHandler
 import org.bukkit.ChatColor
@@ -76,10 +76,15 @@ class EditQueueMenu(private val queue: Queue) : Menu() {
 
         override fun clicked(player: Player, slot: Int, clickType: ClickType, view: InventoryView) {
             if (clickType.isLeftClick) {
-                SelectRouteMenu { route ->
+                SelectServerMenu { route ->
+                    if (route == null) {
+                        this@EditQueueMenu.openMenu(player)
+                        return@SelectServerMenu
+                    }
+
                     if (!route.proxied) {
                         player.sendMessage("${ChatColor.RED}You can't route a queue to a server that is not proxied.")
-                        return@SelectRouteMenu
+                        return@SelectServerMenu
                     }
 
                     queue.route = route

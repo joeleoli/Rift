@@ -8,9 +8,13 @@ import java.util.concurrent.ConcurrentHashMap
 object ServerHandler {
 
     const val GROUP_UPDATE = "ServerGroupUpdate"
+    const val GROUP_DELETE = "ServerGroupDelete"
+
     const val SERVER_UPDATE = "ServerUpdate"
+    const val SERVER_DELETE = "ServerDelete"
 
     val groups: MutableMap<String, ServerGroup> = ConcurrentHashMap()
+    val servers: MutableMap<String, Server> = ConcurrentHashMap()
 
     fun initialLoad() {
         loadGroups()
@@ -20,9 +24,8 @@ object ServerHandler {
     private fun loadGroups() {
         Rift.instance.plugin.getRedis().runRedisCommand { redis ->
             for (groupId in redis.smembers("Rift:ServerGroups")) {
-                fetchGroupById(groupId).ifPresent { group ->
-                    groups[group.id.toLowerCase()] = group
-                }
+                val group = fetchGroupById(groupId) ?: continue
+                groups[group.id.toLowerCase()] = group
             }
         }
     }
@@ -38,19 +41,19 @@ object ServerHandler {
      * Gets a [ServerGroup] object by the given [groupId].
      */
     fun getGroupById(groupId: String): ServerGroup? {
-        return getGroups().firstOrNull { group -> group.displayName == groupId }
+        return groups[groupId.toLowerCase()] ?: groups.values.firstOrNull { group -> group.displayName == groupId }
     }
 
     /**
      * Fetches a [ServerGroup] for the given [groupId].
      */
-    fun fetchGroupById(groupId: String): Optional<ServerGroup> {
+    fun fetchGroupById(groupId: String): ServerGroup? {
         return Rift.instance.plugin.getRedis().runRedisCommand { client ->
             val map = client.hgetAll("Rift:ServerGroup:$groupId")
             if (map.isEmpty()) {
-                Optional.empty()
+                null
             } else {
-                Optional.of(ServerGroup(map))
+                ServerGroup(map)
             }
         }
     }
@@ -65,6 +68,18 @@ object ServerHandler {
         }
 
         Rift.instance.pidgin.sendMessage(Message(GROUP_UPDATE, group.toMap()))
+    }
+
+    /**
+     * Deletes the given [group] from redis.
+     */
+    fun deleteGroup(group: ServerGroup) {
+        Rift.instance.plugin.getRedis().runRedisCommand { redis ->
+            redis.del("Rift:ServerGroups")
+            redis.del("Rift:ServerGroup:${group.displayName}")
+        }
+
+        Rift.instance.pidgin.sendMessage(Message(GROUP_DELETE, mapOf("Group" to group.id)))
     }
 
     /**
@@ -86,7 +101,7 @@ object ServerHandler {
                 Rift.instance.pidgin.sendMessage(Message(GROUP_UPDATE, group.toMap()))
             }
 
-            groups[groupId] = group
+            groups[groupId.toLowerCase()] = group
 
             return@runRedisCommand group
         }
@@ -99,11 +114,12 @@ object ServerHandler {
         try {
             Rift.instance.plugin.getRedis().runRedisCommand { redis ->
                 for (serverId in redis.smembers("Rift:Servers")) {
-                    fetchServerById(serverId).ifPresent { server ->
-                        val group = loadOrCreateGroup(server.group)
-                        if (!group.servers.contains(server)) {
-                            group.servers.add(server)
-                        }
+                    val server = fetchServerById(serverId) ?: continue
+                    servers[serverId.toLowerCase()] = server
+
+                    val group = loadOrCreateGroup(server.group)
+                    if (!group.servers.contains(server)) {
+                        group.servers.add(server)
                     }
                 }
             }
@@ -116,30 +132,27 @@ object ServerHandler {
     /**
      * Gets the [Server]s loaded into memory.
      */
-    fun getServers(): List<Server> {
-        return groups.values.flatMap { it.servers }
+    fun getServers(): Collection<Server> {
+        return servers.values
     }
 
     /**
      * Gets a [Server] for the given [serverName] if loaded into memory.
      */
-    fun getServerById(serverName: String, ignoreCase: Boolean = true): Optional<Server> {
-        return Optional.ofNullable(
-            getServers()
-                .firstOrNull { server -> server.id.equals(serverName, ignoreCase = true)
-                || server.displayName.equals(serverName, ignoreCase = ignoreCase) })
+    fun getServerById(serverName: String, ignoreCase: Boolean = true): Server? {
+        return servers[serverName.toLowerCase()] ?: servers.values.firstOrNull { it.displayName.equals(serverName, ignoreCase) }
     }
 
     /**
      * Attempts to fetch a [Server] from redis.
      */
-    fun fetchServerById(serverId: String): Optional<Server> {
+    fun fetchServerById(serverId: String): Server? {
         return Rift.instance.plugin.getRedis().runRedisCommand { client ->
             val map = client.hgetAll("Rift:Server:$serverId")
             if (map.isEmpty()) {
-                Optional.empty()
+                null
             } else {
-                Optional.of(Server(map))
+                Server(map)
             }
         }
     }
@@ -166,6 +179,8 @@ object ServerHandler {
             redis.del("Rift:Server:${server.id}")
             redis.hdel("Rift:ServerPorts", server.port.toString())
         }
+
+        Rift.instance.pidgin.sendMessage(Message(SERVER_DELETE, mapOf("Server" to server.id)))
     }
 
     /**
@@ -175,15 +190,39 @@ object ServerHandler {
         return Rift.instance.plugin.getRedis().runRedisCommand { redis ->
             val exists = redis.exists("Rift:Server:$id")
 
-            val server = if (exists) {
+            var server = if (exists) {
                 Server(redis.hgetAll("Rift:Server:$id"))
             } else {
                 Server(id, "default", port)
             }
 
+            // sync new data with an existing instance rather than creating a new instance
+            val existingInstance = getServerById(id)
+            if (existingInstance != null) {
+                if (existingInstance.group != server.group) {
+                    getGroupById(existingInstance.group)?.servers?.remove(server) // remove server from old group
+                }
+
+                existingInstance.group = server.group
+                existingInstance.port = server.port
+                existingInstance.displayName = server.displayName
+                existingInstance.slots = server.slots
+                existingInstance.whitelisted = server.whitelisted
+                existingInstance.onlineMode = server.onlineMode
+                existingInstance.proxied = server.proxied
+                existingInstance.lastHeartbeat = server.lastHeartbeat
+                existingInstance.currentUptime = server.currentUptime
+                existingInstance.currentTps = server.currentTps
+                existingInstance.playerCount = server.playerCount
+
+                server = existingInstance
+            }
+
             if (!exists) {
                 saveServer(server)
             }
+
+            servers[server.id.toLowerCase()] = server
 
             val group = loadOrCreateGroup(server.group)
             if (!group.servers.contains(server)) {

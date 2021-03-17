@@ -3,7 +3,6 @@ package com.minexd.rift.bukkit.queue.command
 import net.evilblock.cubed.command.Command
 import net.evilblock.cubed.command.data.parameter.Param
 import com.minexd.rift.Rift
-import com.minexd.rift.bukkit.util.Constants
 import com.minexd.rift.queue.Queue
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
@@ -19,7 +18,7 @@ object QueueLeaveCommand {
     fun execute(player: Player, @Param(name = "queue", defaultValue = "self") queue: Queue) {
         val entry = queue.getEntry(player.uniqueId)
         if (entry == null) {
-            player.sendMessage("${Constants.QUEUE_CHAT_PREFIX}${ChatColor.RED}You are not in that queue!")
+            player.sendMessage("${ChatColor.RED}You are not in that queue!")
             return
         }
 

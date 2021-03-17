@@ -9,7 +9,7 @@ import net.evilblock.cubed.menu.menus.ConfirmMenu
 import net.evilblock.cubed.util.text.TextSplitter
 import net.evilblock.cubed.util.bukkit.Tasks
 import net.evilblock.cubed.util.bukkit.prompt.EzPrompt
-import com.minexd.rift.bukkit.server.menu.SelectRouteMenu
+import com.minexd.rift.bukkit.server.menu.SelectServerMenu
 import com.minexd.rift.queue.Queue
 import com.minexd.rift.queue.QueueHandler
 import org.bukkit.ChatColor
@@ -84,7 +84,12 @@ class QueueEditorMenu : Menu() {
                             return@acceptInput
                         }
 
-                        SelectRouteMenu { route ->
+                        SelectServerMenu { route ->
+                            if (route == null) {
+                                this@QueueEditorMenu.openMenu(player)
+                                return@SelectServerMenu
+                            }
+
                             val queue = Queue(input, route)
                             QueueHandler.trackQueue(queue)
 
