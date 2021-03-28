@@ -5,7 +5,7 @@ import com.mojang.authlib.GameProfile
 import com.mojang.authlib.properties.Property
 import com.minexd.rift.bukkit.RiftBukkitPlugin
 import com.minexd.rift.bukkit.spoof.SpoofHandler
-import com.minexd.rift.bukkit.spoof.v1_12_R1.FakeEntityPlayer
+import com.minexd.rift.bukkit.spoof.v1_8_R3.FakeEntityPlayer
 import net.evilblock.cubed.serializers.Serializers
 import org.bukkit.Bukkit
 import java.util.*
@@ -51,9 +51,7 @@ object SpoofThread : Thread("Rift-Spoof") {
                             val gameProfile = GameProfile(uuid, username)
                             gameProfile.properties.put("textures", Property("textures", skin.get("value").asString, skin.get("signature").asString))
 
-                            SpoofHandler.addFakePlayer(
-                                FakeEntityPlayer(gameProfile)
-                            )
+                            SpoofHandler.addFakePlayer(FakeEntityPlayer(gameProfile))
 
                             delay()
                         }

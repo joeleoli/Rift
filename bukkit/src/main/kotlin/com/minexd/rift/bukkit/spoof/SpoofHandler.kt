@@ -7,9 +7,11 @@ import net.evilblock.cubed.util.bukkit.Tasks
 import net.evilblock.cubed.util.nms.MinecraftReflection
 import com.minexd.rift.Rift
 import com.minexd.rift.bukkit.RiftBukkitPlugin
+import com.minexd.rift.bukkit.spoof.event.SpoofPlayerAddEvent
+import com.minexd.rift.bukkit.spoof.event.SpoofPlayerRemoveEvent
 import com.minexd.rift.bukkit.spoof.store.RedisBungeeSpoof
 import com.minexd.rift.bukkit.spoof.thread.SpoofThread
-import com.minexd.rift.bukkit.spoof.v1_12_R1.FakeEntityPlayer
+import com.minexd.rift.bukkit.spoof.v1_8_R3.FakeEntityPlayer
 import net.evilblock.cubed.serializers.Serializers
 import net.minecraft.server.v1_8_R3.MinecraftServer
 import org.bukkit.Bukkit
@@ -132,11 +134,17 @@ object SpoofHandler {
 
         val existing = Bukkit.getPlayer(player.name)
         if (existing != null) {
-            removeFakePlayer((existing as CraftPlayer).handle as FakeEntityPlayer)
+            if (existing is CraftPlayer) {
+                removeFakePlayer(existing.handle as FakeEntityPlayer)
+            }
             return
         }
 
-        player.ping = ThreadLocalRandom.current().nextInt(10, 200)
+        if (!SpoofPlayerAddEvent(player).call()) {
+            return
+        }
+
+        player.ping = ThreadLocalRandom.current().nextInt(10, 130)
 
         val bukkitPlayer = player.bukkitEntity
         bukkitPlayer.displayName = player.name
@@ -190,6 +198,8 @@ object SpoofHandler {
     }
 
     fun removeFakePlayer(player: FakeEntityPlayer, forceAsync: Boolean = true) {
+        SpoofPlayerRemoveEvent(player).call()
+
         // de-spawn fake player THEN remove from map
         try {
             MinecraftServer.getServer().playerList.disconnect(player)

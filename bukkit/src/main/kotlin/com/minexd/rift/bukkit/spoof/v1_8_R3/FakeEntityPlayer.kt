@@ -1,4 +1,4 @@
-package com.minexd.rift.bukkit.spoof.v1_12_R1
+package com.minexd.rift.bukkit.spoof.v1_8_R3
 
 import com.mojang.authlib.GameProfile
 import net.minecraft.server.v1_8_R3.EntityPlayer
@@ -8,9 +8,7 @@ class FakeEntityPlayer(gameProfile: GameProfile) : EntityPlayer(
     MinecraftServer.getServer(),
     MinecraftServer.getServer().getWorldServer(0),
     gameProfile,
-    FakePlayerInteractManager(
-        MinecraftServer.getServer().getWorldServer(0)
-    )
+    FakePlayerInteractManager(MinecraftServer.getServer().getWorldServer(0))
 ) {
 
     private var ticked: Boolean = false

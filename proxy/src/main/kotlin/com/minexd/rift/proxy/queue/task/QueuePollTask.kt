@@ -59,14 +59,14 @@ object QueuePollTask : Runnable {
 
                     sent++
 
-                    player.sendMessage(*ComponentBuilder("QUEUE ")
-                        .color(ChatColor.RED)
+                    player.sendMessage(*ComponentBuilder("Queue > ")
+                        .color(ChatColor.GOLD)
                         .bold(true)
                         .append("You're up! Sending you to ")
                         .color(ChatColor.GRAY)
                         .bold(false)
                         .append(queue.route.displayName)
-                        .color(ChatColor.LIGHT_PURPLE)
+                        .color(ChatColor.YELLOW)
                         .bold(true)
                         .append("...")
                         .color(ChatColor.GRAY)

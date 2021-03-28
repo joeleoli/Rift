@@ -265,7 +265,7 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
 
     fun joinQueue(player: Player, queue: Queue) {
         if (player.isOp || player.hasPermission(com.minexd.rift.bukkit.util.Permissions.SERVER_JUMP)) {
-            player.sendMessage("${Constants.QUEUE_CHAT_PREFIX}${ChatColor.GRAY}Sending you to ${queue.route.getColor()}${queue.route.displayName}${ChatColor.GRAY}!")
+            player.sendMessage("${Constants.QUEUE_CHAT_PREFIX}${ChatColor.GRAY}Sending you to ${ChatColor.YELLOW}${queue.route.displayName}${ChatColor.GRAY}!")
             BungeeUtil.sendToServer(player, queue.route.id)
             return
         }

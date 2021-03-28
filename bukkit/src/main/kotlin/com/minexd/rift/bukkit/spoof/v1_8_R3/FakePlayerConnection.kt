@@ -1,4 +1,4 @@
-package com.minexd.rift.bukkit.spoof.v1_12_R1
+package com.minexd.rift.bukkit.spoof.v1_8_R3
 
 import net.minecraft.server.v1_8_R3.MinecraftServer
 import net.minecraft.server.v1_8_R3.Packet
