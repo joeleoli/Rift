@@ -1,7 +1,6 @@
 package com.minexd.rift.bukkit.server.group.menu
 
 import com.minexd.rift.bukkit.server.group.menu.button.GroupButton
-import com.minexd.rift.bukkit.server.menu.ServersMenu
 import com.minexd.rift.server.ServerGroup
 import com.minexd.rift.server.ServerHandler
 import net.evilblock.cubed.menu.Button
@@ -27,10 +26,14 @@ class GroupsMenu : PaginatedMenu() {
         return "Server Groups"
     }
 
+    override fun getGlobalButtons(player: Player): Map<Int, Button> {
+        return hashMapOf<Int, Button>().also { buttons ->
+            buttons[4] = AddServerGroupButton()
+        }
+    }
+
     override fun getAllPagesButtons(player: Player): Map<Int, Button> {
         return hashMapOf<Int, Button>().also { buttons ->
-            buttons[0] = AddServerGroupButton()
-
             for (group in ServerHandler.getGroups()) {
                 buttons[buttons.size] = EditGroupButton(group)
             }
@@ -66,7 +69,7 @@ class GroupsMenu : PaginatedMenu() {
             if (clickType.isLeftClick) {
                 EditGroupMenu(group).openMenu(player)
             } else if (clickType.isRightClick) {
-                ServersMenu(group).openMenu(player)
+                GroupServersMenu(group).openMenu(player)
             }
         }
     }

@@ -39,7 +39,7 @@ open class ServerButton(protected val server: Server) : Button() {
                 description.add(buildString {
                     append("${ChatColor.GRAY}Last Heartbeat: ")
 
-                    val timeAgo = ((server.lastHeartbeat - System.currentTimeMillis()) / 1000.0).toInt()
+                    val timeAgo = ((System.currentTimeMillis() - server.lastHeartbeat) / 1000.0).toInt()
                     append("${ChatColor.YELLOW}${TimeUtil.formatIntoAbbreviatedString(timeAgo)}")
                 })
             }
@@ -54,8 +54,8 @@ open class ServerButton(protected val server: Server) : Button() {
 
                 description.add(buildString {
                     append("${ChatColor.GRAY}Players: ")
-                    append("${ChatColor.GREEN}${ChatColor.BOLD}${Numbers.format(server.playerCount)}")
-                    append("${ChatColor.GRAY}/${ChatColor.GREEN}${Numbers.format(server.slots)}")
+                    append("${ChatColor.GREEN}${Numbers.format(server.playerCount)}")
+                    append("/${ChatColor.GREEN}${Numbers.format(server.slots)}")
                 })
             }
         }

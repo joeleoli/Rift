@@ -1,7 +1,9 @@
-package com.minexd.rift.bukkit.server.menu
+package com.minexd.rift.bukkit.server.group.menu
 
+import com.minexd.rift.bukkit.server.menu.EditServerMenu
 import com.minexd.rift.bukkit.server.menu.button.ServerButton
 import com.minexd.rift.server.Server
+import com.minexd.rift.server.ServerGroup
 import com.minexd.rift.server.ServerHandler
 import net.evilblock.cubed.menu.Button
 import net.evilblock.cubed.menu.menus.ConfirmMenu
@@ -12,19 +14,19 @@ import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.inventory.InventoryView
 
-class ServersMenu : PaginatedMenu() {
+class GroupServersMenu(private val group: ServerGroup) : PaginatedMenu() {
 
     init {
         updateAfterClick = true
     }
 
     override fun getPrePaginatedTitle(player: Player): String {
-        return "Servers"
+        return "Servers - ${group.displayName}"
     }
 
     override fun getAllPagesButtons(player: Player): Map<Int, Button> {
         return hashMapOf<Int, Button>().also { buttons ->
-            for (server in ServerHandler.getServers()) {
+            for (server in group.servers) {
                 buttons[buttons.size] = GroupServerButton(server)
             }
         }
@@ -32,6 +34,14 @@ class ServersMenu : PaginatedMenu() {
 
     override fun getMaxItemsPerPage(player: Player): Int {
         return 45
+    }
+
+    override fun onClose(player: Player, manualClose: Boolean) {
+        if (manualClose) {
+            Tasks.delayed(1L) {
+                EditGroupMenu(group).openMenu(player)
+            }
+        }
     }
 
     private inner class GroupServerButton(server: Server) : ServerButton(server) {
@@ -45,17 +55,17 @@ class ServersMenu : PaginatedMenu() {
 
         override fun clicked(player: Player, slot: Int, clickType: ClickType, view: InventoryView) {
             if (clickType.isLeftClick) {
-                EditServerMenu(this@ServersMenu, server).openMenu(player)
+                EditServerMenu(this@GroupServersMenu, server).openMenu(player)
             } else if (clickType.isRightClick) {
                 ConfirmMenu { confirmed ->
                     if (confirmed) {
                         Tasks.async {
-                            ServerHandler.getGroupById(server.id)?.servers?.remove(server)
+                            group.servers.remove(server)
                             ServerHandler.servers.remove(server.id.toLowerCase())
                             ServerHandler.deleteServer(server)
                         }
 
-                        this@ServersMenu.openMenu(player)
+                        this@GroupServersMenu.openMenu(player)
                     }
                 }.openMenu(player)
             }

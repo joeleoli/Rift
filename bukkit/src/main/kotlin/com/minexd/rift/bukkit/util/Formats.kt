@@ -1,6 +1,6 @@
 package com.minexd.rift.bukkit.util
 
-import net.evilblock.cubed.util.math.Numbers
+import net.evilblock.cubed.util.text.TextUtil
 import org.bukkit.ChatColor
 
 object Formats {
@@ -9,16 +9,16 @@ object Formats {
     fun formatTps(tps: Double): String {
         return when {
             tps > 18.0 -> {
-                "${ChatColor.GREEN}${Numbers.format(tps)}"
+                "${ChatColor.GREEN}${TextUtil.formatTPS(tps)}"
             }
             tps > 12.0 -> {
-                "${ChatColor.YELLOW}${Numbers.format(tps)}"
+                "${ChatColor.YELLOW}${TextUtil.formatTPS(tps)}"
             }
             tps > 8.0 -> {
-                "${ChatColor.RED}${Numbers.format(tps)}"
+                "${ChatColor.RED}${TextUtil.formatTPS(tps)}"
             }
             else -> {
-                "${ChatColor.DARK_RED}${Numbers.format(tps)}"
+                "${ChatColor.DARK_RED}${TextUtil.formatTPS(tps)}"
             }
         }
     }

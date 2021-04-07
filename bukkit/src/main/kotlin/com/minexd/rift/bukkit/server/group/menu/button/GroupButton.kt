@@ -18,7 +18,7 @@ open class GroupButton(protected val group: ServerGroup) : Button() {
             desc.add(buildString {
                 append("${ChatColor.GRAY}Servers: ")
                 append("${ChatColor.GREEN}${Numbers.format(group.getOnlineServers().size)}")
-                append("${ChatColor.GRAY}/${Numbers.format(group.servers.size)}")
+                append("/${Numbers.format(group.servers.size)}")
             })
 
             desc.add("${ChatColor.GRAY}Players: ${ChatColor.GREEN}${Numbers.format(group.getOnlineServersPlayerCount())}")

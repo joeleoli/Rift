@@ -10,15 +10,12 @@ import com.minexd.rift.bukkit.command.ReloadCommand
 import com.minexd.rift.bukkit.queue.command.QueueJoinCommand
 import com.minexd.rift.server.Server
 import com.minexd.rift.server.ServerHandler
-import com.minexd.rift.bukkit.server.command.ServerDumpCommand
 import com.minexd.rift.bukkit.queue.command.QueueEditorCommand
 import com.minexd.rift.bukkit.queue.command.QueueLeaveCommand
 import com.minexd.rift.bukkit.queue.command.parameter.QueueParameterType
 import com.minexd.rift.bukkit.queue.event.PlayerJoinQueueEvent
 import com.minexd.rift.bukkit.queue.event.PlayerLeaveQueueEvent
-import com.minexd.rift.bukkit.server.command.ServerJumpCommand
-import com.minexd.rift.bukkit.server.command.ServerMetadataEditorCommand
-import com.minexd.rift.bukkit.server.command.ServersCommand
+import com.minexd.rift.bukkit.server.command.*
 import com.minexd.rift.bukkit.server.command.parameter.ServerParameterType
 import com.minexd.rift.bukkit.server.task.ServerUpdateTask
 import com.minexd.rift.bukkit.spoof.SpoofHandler
@@ -120,6 +117,7 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
         CommandHandler.registerClass(ReloadCommand.javaClass)
 
         CommandHandler.registerClass(ServersCommand.javaClass)
+        CommandHandler.registerClass(ServerGroupsCommand.javaClass)
         CommandHandler.registerClass(ServerDumpCommand.javaClass)
         CommandHandler.registerClass(ServerJumpCommand.javaClass)
         CommandHandler.registerClass(ServerMetadataEditorCommand.javaClass)
