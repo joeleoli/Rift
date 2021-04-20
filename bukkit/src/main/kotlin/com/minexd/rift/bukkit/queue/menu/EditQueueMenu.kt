@@ -14,7 +14,6 @@ import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.inventory.InventoryView
-import kotlin.math.round
 
 class EditQueueMenu(private val queue: Queue) : Menu() {
 
@@ -247,9 +246,9 @@ class EditQueueMenu(private val queue: Queue) : Menu() {
             }
 
             if (clickType.isLeftClick) {
-                queue.pollingRate = round(((queue.pollingRate + mod) * 10.0) / 10.0)
+                queue.pollingRate = (queue.pollingRate + mod)
             } else if (clickType.isRightClick) {
-                queue.pollingRate = round((0.0.coerceAtLeast(queue.pollingRate - mod) * 10.0) / 10.0)
+                queue.pollingRate = 0.0.coerceAtLeast(queue.pollingRate - mod)
             }
 
             if (queue.pollingRate != original) {

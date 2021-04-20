@@ -17,22 +17,25 @@ class Rift(val plugin: Plugin) {
         @JvmStatic lateinit var instance: Rift
     }
 
-    lateinit var pidgin: Pidgin
+    lateinit var mainChannel: Pidgin
+    lateinit var proxyChannel: Pidgin
 
     init {
         instance = this
     }
 
     fun initialLoad() {
-        pidgin = Pidgin("Rift", plugin.getRedis().jedisPool!!, Serializers.gson, PidginOptions(async = true))
+        mainChannel = Pidgin("Rift-Main", plugin.getRedis().jedisPool!!, Serializers.gson, PidginOptions(async = true))
 
         ProxyHandler.initialLoad()
         ServerHandler.initialLoad()
         QueueHandler.initialLoad()
 
-        pidgin.registerListener(ProxyMessages)
-        pidgin.registerListener(ServerMessages)
-        pidgin.registerListener(QueueMessages)
+        mainChannel.registerListener(ProxyMessages)
+        mainChannel.registerListener(ServerMessages)
+        mainChannel.registerListener(QueueMessages)
+
+        proxyChannel = Pidgin("Rift-Proxy", plugin.getRedis().jedisPool!!, Serializers.gson, PidginOptions(async = true))
     }
 
 }

@@ -14,7 +14,9 @@ interface Plugin {
 
     fun getRedis(): Redis
 
-    fun isProxy(): Boolean
+    fun hasPresence(): Boolean
+
+    fun getInstanceID(): String
 
     fun onJoinQueue(queue: Queue, entry: QueueEntry) {
 

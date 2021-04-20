@@ -15,7 +15,7 @@ object ServerDumpCommand {
     )
     @JvmStatic
     fun execute(sender: CommandSender) {
-        sender.sendMessage("${ChatColor.GRAY}There are ${ChatColor.RED}${ChatColor.BOLD}${ServerHandler.getTotalPlayerCount()} ${ChatColor.GRAY}online players across ${ChatColor.RED}${ChatColor.BOLD}${ServerHandler.getOnlineServerCount()} ${ChatColor.GRAY}servers.")
+        sender.sendMessage("${ChatColor.GRAY}There are ${ChatColor.RED}${ChatColor.BOLD}${ServerHandler.getTotalPlayerCount()} ${ChatColor.GRAY}online players across ${ChatColor.RED}${ChatColor.BOLD}${ServerHandler.getOnlinePlayerCount()} ${ChatColor.GRAY}servers.")
 
         for (server in ServerHandler.getServers()) {
             val color = if (server.isOnline()) {

@@ -59,7 +59,7 @@ class Queue(
         }
 
         val messageData = entry.toMap().toMutableMap().also { it["QueueID"] = id }
-        Rift.instance.pidgin.sendMessage(Message(QueueHandler.QUEUE_ADD_ENTRY, messageData))
+        Rift.instance.mainChannel.sendMessage(Message(QueueHandler.QUEUE_ADD_ENTRY, messageData))
     }
 
     fun removeEntry(entry: QueueEntry) {
@@ -72,7 +72,7 @@ class Queue(
             redis.del("Rift:Queue:${id}.Entry:${entry.uuid}")
         }
 
-        Rift.instance.pidgin.sendMessage(Message(QueueHandler.QUEUE_REMOVE_ENTRY, mapOf(
+        Rift.instance.mainChannel.sendMessage(Message(QueueHandler.QUEUE_REMOVE_ENTRY, mapOf(
             "QueueID" to id,
             "EntryID" to entry.uuid.toString()
         )))
@@ -130,7 +130,7 @@ class Queue(
             redis.del("Rift:Queue:${id}.Entries")
         }
 
-        Rift.instance.pidgin.sendMessage(Message(QueueHandler.QUEUE_FLUSH, mapOf("Queue" to id)))
+        Rift.instance.mainChannel.sendMessage(Message(QueueHandler.QUEUE_FLUSH, mapOf("Queue" to id)))
     }
 
     fun canPoll(): Boolean {

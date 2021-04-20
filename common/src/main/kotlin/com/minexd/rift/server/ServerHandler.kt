@@ -11,6 +11,7 @@ object ServerHandler {
     const val GROUP_DELETE = "ServerGroupDelete"
 
     const val SERVER_UPDATE = "ServerUpdate"
+    const val SERVER_UPDATE_COUNT = "ServerUpdateCount"
     const val SERVER_DELETE = "ServerDelete"
 
     val groups: MutableMap<String, ServerGroup> = ConcurrentHashMap()
@@ -67,7 +68,7 @@ object ServerHandler {
             redis.hmset("Rift:ServerGroup:${group.displayName}", group.toMap())
         }
 
-        Rift.instance.pidgin.sendMessage(Message(GROUP_UPDATE, group.toMap()))
+        Rift.instance.mainChannel.sendMessage(Message(GROUP_UPDATE, group.toMap()))
     }
 
     /**
@@ -79,7 +80,7 @@ object ServerHandler {
             redis.del("Rift:ServerGroup:${group.displayName}")
         }
 
-        Rift.instance.pidgin.sendMessage(Message(GROUP_DELETE, mapOf("Group" to group.id)))
+        Rift.instance.mainChannel.sendMessage(Message(GROUP_DELETE, mapOf("Group" to group.id)))
     }
 
     /**
@@ -98,7 +99,7 @@ object ServerHandler {
             if (!exists) {
                 saveGroup(group)
 
-                Rift.instance.pidgin.sendMessage(Message(GROUP_UPDATE, group.toMap()))
+                Rift.instance.mainChannel.sendMessage(Message(GROUP_UPDATE, group.toMap()))
             }
 
             groups[groupId.toLowerCase()] = group
@@ -167,7 +168,7 @@ object ServerHandler {
             redis.hmset("Rift:ServerPorts", mapOf(server.port.toString() to server.id))
         }
 
-        Rift.instance.pidgin.sendMessage(Message(SERVER_UPDATE, mapOf("Server" to server.id, "ServerPort" to server.port)))
+        Rift.instance.mainChannel.sendMessage(Message(SERVER_UPDATE, mapOf("Server" to server.id, "ServerPort" to server.port)))
     }
 
     /**
@@ -180,7 +181,7 @@ object ServerHandler {
             redis.hdel("Rift:ServerPorts", server.port.toString())
         }
 
-        Rift.instance.pidgin.sendMessage(Message(SERVER_DELETE, mapOf("Server" to server.id)))
+        Rift.instance.mainChannel.sendMessage(Message(SERVER_DELETE, mapOf("Server" to server.id)))
     }
 
     /**
@@ -214,6 +215,7 @@ object ServerHandler {
                 existingInstance.currentUptime = server.currentUptime
                 existingInstance.currentTps = server.currentTps
                 existingInstance.playerCount = server.playerCount
+                existingInstance.configuration = server.configuration
 
                 server = existingInstance
             }
@@ -237,7 +239,7 @@ object ServerHandler {
         return groups.values.sumBy { it.getAllServersPlayerCount() }
     }
 
-    fun getOnlineServerCount(): Int {
+    fun getOnlinePlayerCount(): Int {
         return groups.values.sumBy { it.getOnlineServersPlayerCount() }
     }
 

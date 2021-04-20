@@ -68,7 +68,7 @@ object ProxyHandler {
             redis.hmset("Rift:Proxy:${proxy.id}", proxy.toMap())
         }
 
-        Rift.instance.pidgin.sendMessage(Message(PROXY_UPDATE, mapOf("Proxy" to proxy.id)))
+        Rift.instance.mainChannel.sendMessage(Message(PROXY_UPDATE, mapOf("Proxy" to proxy.id)))
     }
 
     /**

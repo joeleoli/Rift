@@ -14,6 +14,7 @@ object QueueHandler {
     const val QUEUE_FLUSH = "QueueFlush"
     const val QUEUE_ADD_ENTRY = "QueueAddEntry"
     const val QUEUE_REMOVE_ENTRY = "QueueRemoveEntry"
+    const val QUEUE_POLL = "QueuePoll"
 
     private val queues: MutableMap<String, Queue> = ConcurrentHashMap()
     private var priority: MutableMap<String, Int> = ConcurrentHashMap()
@@ -92,7 +93,7 @@ object QueueHandler {
             redis.hmset("Rift:Queue:${queue.id}", queue.toMap())
         }
 
-        Rift.instance.pidgin.sendMessage(Message(QUEUE_UPDATE, mapOf("Queue" to queue.id)))
+        Rift.instance.mainChannel.sendMessage(Message(QUEUE_UPDATE, mapOf("Queue" to queue.id)))
     }
 
     /**
@@ -104,7 +105,7 @@ object QueueHandler {
             redis.del("Rift:Queue:${queue.id}")
         }
 
-        Rift.instance.pidgin.sendMessage(Message(QUEUE_DELETE, mapOf("Queue" to queue.id)))
+        Rift.instance.mainChannel.sendMessage(Message(QUEUE_DELETE, mapOf("Queue" to queue.id)))
     }
 
     fun getPriority(): MutableMap<String, Int> {
@@ -132,7 +133,7 @@ object QueueHandler {
             redis.hmset("Rift:QueuePriority", mapOf(permission.toLowerCase() to priority.toString()))
         }
 
-        Rift.instance.pidgin.sendMessage(Message(PRIORITY_UPDATE))
+        Rift.instance.mainChannel.sendMessage(Message(PRIORITY_UPDATE))
     }
 
     fun deletePriority(permission: String) {
@@ -142,7 +143,7 @@ object QueueHandler {
             redis.hdel("Rift:QueuePriority", permission.toLowerCase())
         }
 
-        Rift.instance.pidgin.sendMessage(Message(PRIORITY_UPDATE))
+        Rift.instance.mainChannel.sendMessage(Message(PRIORITY_UPDATE))
     }
 
 }

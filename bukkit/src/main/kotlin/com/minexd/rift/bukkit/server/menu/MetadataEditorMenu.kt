@@ -178,6 +178,7 @@ class MetadataEditorMenu(private val server: Server) : Menu() {
                         .withText("${ChatColor.GREEN}Please input a new number value.")
                         .acceptInput{ number ->
                             server.configuration.addProperty(key, number)
+                            println(server.configuration)
 
                             Tasks.async {
                                 ServerHandler.saveServer(server)

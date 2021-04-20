@@ -33,7 +33,7 @@ class QueueEditorMenu : Menu() {
         val buttons = hashMapOf<Int, Button>()
 
         buttons[0] = AddQueueButton()
-        buttons[2] = EditPriorityButton()
+        buttons[1] = EditPriorityButton()
 
         for (i in 9..17) {
             buttons[i] = GlassButton(0)

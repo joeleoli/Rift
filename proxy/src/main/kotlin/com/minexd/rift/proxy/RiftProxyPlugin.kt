@@ -4,8 +4,11 @@ import com.google.common.io.ByteStreams
 import net.evilblock.cubed.Cubed
 import net.evilblock.cubed.store.redis.Redis
 import com.minexd.rift.Rift
+import com.minexd.rift.proxy.lobby.LobbyListeners
+import com.minexd.rift.proxy.lobby.ProxyLobbyMessages
+import com.minexd.rift.proxy.queue.ProxyQueueMessages
 import com.minexd.rift.proxy.queue.QueueExpiration
-import com.minexd.rift.proxy.queue.task.QueuePollTask
+import com.minexd.rift.proxy.queue.QueuePositionAlert
 import com.minexd.rift.proxy.task.ProxyUpdateTask
 import com.minexd.rift.queue.Queue
 import com.minexd.rift.queue.QueueEntry
@@ -42,6 +45,8 @@ class RiftProxyPlugin : Plugin(), com.minexd.rift.plugin.Plugin {
         loadConfig()
 
         Rift(this).initialLoad()
+        Rift.instance.proxyChannel.registerListener(ProxyLobbyMessages)
+        Rift.instance.proxyChannel.registerListener(ProxyQueueMessages)
 
         try {
             proxyInstance = ProxyHandler.loadOrCreateProxy(readProxyId())
@@ -50,9 +55,10 @@ class RiftProxyPlugin : Plugin(), com.minexd.rift.plugin.Plugin {
                 ServerHandler.loadOrCreateServer(server.name, server.address.port)
             }
 
+            proxy.pluginManager.registerListener(this, LobbyListeners)
             proxy.pluginManager.registerListener(this, QueueExpiration)
 
-            proxy.scheduler.schedule(this, QueuePollTask, 250L, 250L, TimeUnit.MILLISECONDS)
+            proxy.scheduler.schedule(this, QueuePositionAlert, 20_000L, 20_000L, TimeUnit.MILLISECONDS)
             proxy.scheduler.schedule(this, QueueExpiration, 1L, 1L, TimeUnit.SECONDS)
             proxy.scheduler.schedule(this, ProxyUpdateTask, 1L, readBroadcastInterval().toLong(), TimeUnit.SECONDS)
         } catch (e: Exception) {
@@ -105,8 +111,12 @@ class RiftProxyPlugin : Plugin(), com.minexd.rift.plugin.Plugin {
         return Cubed.instance.redis
     }
 
-    override fun isProxy(): Boolean {
+    override fun hasPresence(): Boolean {
         return true
+    }
+
+    override fun getInstanceID(): String {
+        return readProxyId()
     }
 
     override fun onJoinQueue(queue: Queue, entry: QueueEntry) {

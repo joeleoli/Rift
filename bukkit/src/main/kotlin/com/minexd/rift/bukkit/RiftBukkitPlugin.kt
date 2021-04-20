@@ -6,7 +6,11 @@ import net.evilblock.cubed.store.redis.Redis
 import net.evilblock.cubed.util.Reflection
 import net.evilblock.cubed.util.bukkit.Tasks
 import com.minexd.rift.Rift
+import com.minexd.rift.bukkit.command.DebugCommand
+import com.minexd.rift.bukkit.jump.LobbyCommand
 import com.minexd.rift.bukkit.command.ReloadCommand
+import com.minexd.rift.bukkit.jump.SendAllFromToCommand
+import com.minexd.rift.bukkit.jump.SendAllToCommand
 import com.minexd.rift.bukkit.queue.command.QueueJoinCommand
 import com.minexd.rift.server.Server
 import com.minexd.rift.server.ServerHandler
@@ -17,6 +21,7 @@ import com.minexd.rift.bukkit.queue.event.PlayerJoinQueueEvent
 import com.minexd.rift.bukkit.queue.event.PlayerLeaveQueueEvent
 import com.minexd.rift.bukkit.server.command.*
 import com.minexd.rift.bukkit.server.command.parameter.ServerParameterType
+import com.minexd.rift.bukkit.server.listener.ServerCountListeners
 import com.minexd.rift.bukkit.server.task.ServerUpdateTask
 import com.minexd.rift.bukkit.spoof.SpoofHandler
 import com.minexd.rift.bukkit.spoof.command.*
@@ -56,9 +61,10 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
 
             serverInstance = ServerHandler.loadOrCreateServer(readServerId(), server.port)
 
-            SpoofHandler.initialLoad()
-
             loadCommands()
+            loadListeners()
+
+            SpoofHandler.initialLoad()
 
             Tasks.asyncTimer(ServerUpdateTask(), 20L, 20L * readBroadcastInterval())
         } catch (e: Exception) {
@@ -114,7 +120,12 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
         CommandHandler.registerParameterType(Server::class.java, ServerParameterType())
         CommandHandler.registerParameterType(Queue::class.java, QueueParameterType())
 
+        CommandHandler.registerClass(DebugCommand.javaClass)
         CommandHandler.registerClass(ReloadCommand.javaClass)
+
+        CommandHandler.registerClass(LobbyCommand.javaClass)
+        CommandHandler.registerClass(SendAllToCommand.javaClass)
+        CommandHandler.registerClass(SendAllFromToCommand.javaClass)
 
         CommandHandler.registerClass(ServersCommand.javaClass)
         CommandHandler.registerClass(ServerGroupsCommand.javaClass)
@@ -136,6 +147,12 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
         CommandHandler.registerClass(SpoofStatusCommand.javaClass)
         CommandHandler.registerClass(SpoofToggleCommand.javaClass)
         CommandHandler.registerClass(SpoofToggleCommand.javaClass)
+    }
+
+    private fun loadListeners() {
+        server.pluginManager.also { pm ->
+            pm.registerEvents(ServerCountListeners, this)
+        }
     }
 
     fun readProxyId(): String {
@@ -262,7 +279,7 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
     }
 
     fun joinQueue(player: Player, queue: Queue) {
-        if (player.isOp || player.hasPermission(com.minexd.rift.bukkit.util.Permissions.SERVER_JUMP)) {
+        if (player.isOp || player.hasPermission(com.minexd.rift.bukkit.util.Permissions.JUMP_SERVER)) {
             player.sendMessage("${Constants.QUEUE_CHAT_PREFIX}${ChatColor.GRAY}Sending you to ${ChatColor.YELLOW}${queue.route.displayName}${ChatColor.GRAY}!")
             BungeeUtil.sendToServer(player, queue.route.id)
             return
@@ -296,8 +313,12 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
         return Cubed.instance.redis
     }
 
-    override fun isProxy(): Boolean {
-        return false
+    override fun hasPresence(): Boolean {
+        return true
+    }
+
+    override fun getInstanceID(): String {
+        return serverInstance.id
     }
 
     override fun onJoinQueue(queue: Queue, entry: QueueEntry) {

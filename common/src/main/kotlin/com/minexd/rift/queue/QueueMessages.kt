@@ -20,13 +20,13 @@ object QueueMessages : MessageListener {
 
     @IncomingMessageHandler(id = QueueHandler.QUEUE_DELETE)
     fun onDelete(data: JsonObject) {
-        val queue = QueueHandler.getQueueById(data.get("ID").asString) ?: return
+        val queue = QueueHandler.getQueueById(data.get("Queue").asString) ?: return
         QueueHandler.forgetQueue(queue)
     }
 
     @IncomingMessageHandler(id = QueueHandler.QUEUE_FLUSH)
     fun onFlush(data: JsonObject) {
-        val queue = QueueHandler.getQueueById(data.get("ID").asString) ?: return
+        val queue = QueueHandler.getQueueById(data.get("Queue").asString) ?: return
         queue.cachedEntries.clear()
     }
 

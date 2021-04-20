@@ -4,6 +4,7 @@ import net.evilblock.pidgin.message.handler.IncomingMessageHandler
 import net.evilblock.pidgin.message.listener.MessageListener
 import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
+import com.minexd.rift.Rift
 import net.evilblock.cubed.serializers.Serializers
 
 object ServerMessages : MessageListener {
@@ -28,7 +29,16 @@ object ServerMessages : MessageListener {
 
     @IncomingMessageHandler(ServerHandler.SERVER_UPDATE)
     fun onServerUpdate(data: JsonObject) {
-        ServerHandler.loadOrCreateServer(data["Server"].asString, data["ServerPort"].asInt)
+        if (!Rift.instance.plugin.hasPresence() || (Rift.instance.plugin.hasPresence() && Rift.instance.plugin.getInstanceID() != data["Server"].asString)) {
+            ServerHandler.loadOrCreateServer(data["Server"].asString, data["ServerPort"].asInt)
+        }
+    }
+
+    @IncomingMessageHandler(ServerHandler.SERVER_UPDATE_COUNT)
+    fun onServerCountChange(data: JsonObject) {
+        if (!Rift.instance.plugin.hasPresence() || (Rift.instance.plugin.hasPresence() && Rift.instance.plugin.getInstanceID() != data["Server"].asString)) {
+            ServerHandler.getServerById(data["Server"].asString)?.playerCount = data["Count"].asInt
+        }
     }
 
     @IncomingMessageHandler(ServerHandler.SERVER_DELETE)
