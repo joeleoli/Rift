@@ -9,7 +9,7 @@ import org.bukkit.command.CommandSender
 object SpoofMinCommand {
 
     @Command(
-        names = ["rift gs min"],
+        names = ["rift secret min"],
         permission = "op",
         description = "Sets GS min"
     )

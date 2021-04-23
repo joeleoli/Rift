@@ -8,7 +8,7 @@ import org.bukkit.command.CommandSender
 object SpoofToggleCommand {
 
     @Command(
-        names = ["rift gs toggle"],
+        names = ["rift secret toggle"],
         description = "Toggles the GS system",
         permission = "op",
         async = true
