@@ -45,7 +45,7 @@ class ServerGroup(val id: String) {
      * Sums the player count of all the [servers] in this group that are online.
      */
     fun getOnlineServersPlayerCount(): Int {
-        return servers.stream().mapToInt { server -> if (server.isOnline()) 1 else 0 }.sum()
+        return servers.filter { it.isOnline() }.sumBy { it.playerCount }
     }
 
 }
