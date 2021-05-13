@@ -13,7 +13,7 @@ import kotlin.math.max
 object SpoofStatusCommand {
 
     @Command(
-        names = ["rift status"],
+        names = ["rs status"],
         description = "Show the status of Rift",
         permission = "op",
         async = true

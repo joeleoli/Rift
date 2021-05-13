@@ -8,8 +8,8 @@ import org.bukkit.command.CommandSender
 object SpoofToggleCommand {
 
     @Command(
-        names = ["rift secret toggle"],
-        description = "Toggles the GS system",
+        names = ["rs toggle"],
+        description = "Toggles the RS system",
         permission = "op",
         async = true
     )
@@ -18,9 +18,9 @@ object SpoofToggleCommand {
         SpoofHandler.toggle()
 
         if (SpoofHandler.isEnabled()) {
-            sender.sendMessage("${ChatColor.GREEN}GS is now enabled!")
+            sender.sendMessage("${ChatColor.GREEN}RS is now enabled!")
         } else {
-            sender.sendMessage("${ChatColor.RED}GS is now disabled!")
+            sender.sendMessage("${ChatColor.RED}RS is now disabled!")
         }
     }
 

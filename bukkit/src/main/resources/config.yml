@@ -28,27 +28,6 @@ spoof:
   realism:
     # Assigning ranks to fake players
     # rank id -> chance
-    rank-assignment:
-      junkieplus: 2.5
-      junkie: 5.0
-      bedrock: 5.0
-      obsidian: 15.0
-      emerald: 20.0
-      diamond: 20.0
-      gold: 25.0
-      lapis: 30.0
-      redstone: 50.0
+    rank-assignment: {}
     # Making fake players perform actions
-    actions:
-      - chance: 100.0
-        command: "plot auto"
-      - chance: 20.0
-        command: "plot home"
-      - chance: 20.0
-        command: "warp crates"
-      - chance: 20.0
-        command: "warp lb"
-      - chance: 20.0
-        command: "warp a"
-      - chance: 20.0
-        command: "warp info"
+    actions: {}

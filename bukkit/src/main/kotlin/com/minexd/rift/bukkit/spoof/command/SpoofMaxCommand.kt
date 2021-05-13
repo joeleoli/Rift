@@ -8,7 +8,7 @@ import org.bukkit.command.CommandSender
 object SpoofMaxCommand {
 
     @Command(
-        names = ["rift secret max"],
+        names = ["rs max"],
         permission = "op",
         description = "Sets GS max"
     )

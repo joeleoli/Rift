@@ -11,11 +11,9 @@ import com.minexd.rift.bukkit.jump.LobbyCommand
 import com.minexd.rift.bukkit.command.ReloadCommand
 import com.minexd.rift.bukkit.jump.SendAllFromToCommand
 import com.minexd.rift.bukkit.jump.SendAllToCommand
-import com.minexd.rift.bukkit.queue.command.QueueJoinCommand
+import com.minexd.rift.bukkit.queue.command.*
 import com.minexd.rift.server.Server
 import com.minexd.rift.server.ServerHandler
-import com.minexd.rift.bukkit.queue.command.QueueEditorCommand
-import com.minexd.rift.bukkit.queue.command.QueueLeaveCommand
 import com.minexd.rift.bukkit.queue.command.parameter.QueueParameterType
 import com.minexd.rift.bukkit.queue.event.PlayerJoinQueueEvent
 import com.minexd.rift.bukkit.queue.event.PlayerLeaveQueueEvent
@@ -133,6 +131,8 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
         CommandHandler.registerClass(ServerJumpCommand.javaClass)
         CommandHandler.registerClass(ServerMetadataEditorCommand.javaClass)
 
+        CommandHandler.registerClass(PriorityDebugCommand.javaClass)
+        CommandHandler.registerClass(PriorityReverseCommand.javaClass)
         CommandHandler.registerClass(QueueEditorCommand.javaClass)
         CommandHandler.registerClass(QueueJoinCommand.javaClass)
         CommandHandler.registerClass(QueueLeaveCommand.javaClass)
@@ -144,6 +144,7 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
         CommandHandler.registerClass(SpoofMaxDelayCommand.javaClass)
         CommandHandler.registerClass(SpoofMultiCommand.javaClass)
         CommandHandler.registerClass(SpoofPauseCommand.javaClass)
+        CommandHandler.registerClass(SpoofRunCmdsCommand.javaClass)
         CommandHandler.registerClass(SpoofStatusCommand.javaClass)
         CommandHandler.registerClass(SpoofToggleCommand.javaClass)
         CommandHandler.registerClass(SpoofToggleCommand.javaClass)

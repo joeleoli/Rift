@@ -8,8 +8,8 @@ import org.bukkit.command.CommandSender
 object SpoofPauseCommand {
 
     @Command(
-        names = ["rift secret pause"],
-        description = "Pauses or un-pauses the GS system",
+        names = ["rs pause"],
+        description = "Pauses or un-pauses the RS system",
         permission = "op",
         async = true
     )

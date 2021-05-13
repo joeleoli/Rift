@@ -124,7 +124,7 @@ object SpoofHandler {
     }
 
     fun isFakePlayer(player: Player): Boolean {
-        return fakePlayers.contains(player.uniqueId)
+        return fakePlayers.contains(player.uniqueId) || (player as CraftPlayer).handle is FakeEntityPlayer
     }
 
     fun addFakePlayer(player: FakeEntityPlayer) {
@@ -175,9 +175,12 @@ object SpoofHandler {
                 e.printStackTrace()
             }
 
-            Tasks.delayed(40L) {
-                val readCommands = RiftBukkitPlugin.instance.readSpoofActions()
+            val readCommands = RiftBukkitPlugin.instance.readSpoofActions()
+            if (readCommands.isEmpty()) {
+                return@sync
+            }
 
+            Tasks.delayed(40L) {
                 val toPerform = arrayListOf<String>()
                 toPerform.addAll(readCommands.filter { it.second >= 100.0 }.map { it.first })
                 toPerform.add(Chance.weightedPick(readCommands) { it.second }.first)

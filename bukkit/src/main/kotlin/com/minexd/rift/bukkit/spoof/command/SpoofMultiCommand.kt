@@ -9,7 +9,7 @@ import org.bukkit.command.CommandSender
 object SpoofMultiCommand {
 
     @Command(
-        names = ["rift secret mx"],
+        names = ["rs mx", "rs multi"],
         permission = "op",
         description = "Sets GS multi"
     )

@@ -9,6 +9,7 @@ import net.evilblock.cubed.util.text.TextSplitter
 import net.evilblock.cubed.util.bukkit.Tasks
 import net.evilblock.cubed.util.bukkit.prompt.InputPrompt
 import com.minexd.rift.queue.QueueHandler
+import net.evilblock.cubed.util.bukkit.prompt.NumberPrompt
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
@@ -117,6 +118,15 @@ class EditPriorityMenu : PaginatedMenu() {
 
         override fun clicked(player: Player, slot: Int, clickType: ClickType, view: InventoryView) {
             if (clickType == ClickType.MIDDLE) {
+                NumberPrompt()
+                    .withText("${ChatColor.GREEN}Please input a new priority for ${ChatColor.WHITE}$permission${ChatColor.GREEN}.")
+                    .acceptInput { input ->
+                        QueueHandler.savePriority(permission, input.toInt())
+
+                        this@EditPriorityMenu.openMenu(player)
+                    }
+                    .start(player)
+            } else if (clickType == ClickType.DROP || clickType == ClickType.CONTROL_DROP) {
                 ConfirmMenu { confirmed ->
                     if (confirmed) {
                         Tasks.async {

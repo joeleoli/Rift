@@ -8,7 +8,7 @@ import org.bukkit.command.CommandSender
 object SpoofMaxDelayCommand {
 
     @Command(
-        names = ["rift secret max-delay"],
+        names = ["rs max-delay"],
         permission = "op",
         description = "Sets GS max-delay"
     )

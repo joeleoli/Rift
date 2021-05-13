@@ -7,8 +7,8 @@ import org.bukkit.command.CommandSender
 object SpoofDebugCommand {
 
     @Command(
-        names = ["rift secret debug"],
-        description = "Debug the GS system",
+        names = ["rs debug"],
+        description = "Debug the RS system",
         permission = "op",
         async = true
     )
