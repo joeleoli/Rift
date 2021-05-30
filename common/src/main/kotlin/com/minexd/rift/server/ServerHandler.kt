@@ -235,12 +235,8 @@ object ServerHandler {
         }
     }
 
-    fun getTotalPlayerCount(): Int {
-        return groups.values.sumBy { it.getAllServersPlayerCount() }
-    }
-
     fun getOnlinePlayerCount(): Int {
-        return groups.values.sumBy { it.getOnlineServersPlayerCount() }
+        return servers.values.sumBy { it.getPlayerCount().orElse(0) }
     }
 
 }

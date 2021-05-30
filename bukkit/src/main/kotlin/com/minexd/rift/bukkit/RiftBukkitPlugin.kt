@@ -58,6 +58,7 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
             Rift(this).initialLoad()
 
             serverInstance = ServerHandler.loadOrCreateServer(readServerId(), server.port)
+            println("This server is identified as ${serverInstance.id}:${serverInstance.port}")
 
             loadCommands()
             loadListeners()

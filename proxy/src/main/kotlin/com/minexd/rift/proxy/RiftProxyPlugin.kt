@@ -6,6 +6,7 @@ import net.evilblock.cubed.store.redis.Redis
 import com.minexd.rift.Rift
 import com.minexd.rift.proxy.lobby.LobbyListeners
 import com.minexd.rift.proxy.lobby.ProxyLobbyMessages
+import com.minexd.rift.proxy.proxy.ProxyListeners
 import com.minexd.rift.proxy.queue.ProxyQueueMessages
 import com.minexd.rift.proxy.queue.QueueExpiration
 import com.minexd.rift.proxy.queue.QueuePositionAlert
@@ -55,6 +56,7 @@ class RiftProxyPlugin : Plugin(), com.minexd.rift.plugin.Plugin {
                 ServerHandler.loadOrCreateServer(server.name, server.address.port)
             }
 
+            proxy.pluginManager.registerListener(this, ProxyListeners)
             proxy.pluginManager.registerListener(this, LobbyListeners)
             proxy.pluginManager.registerListener(this, QueueExpiration)
 
