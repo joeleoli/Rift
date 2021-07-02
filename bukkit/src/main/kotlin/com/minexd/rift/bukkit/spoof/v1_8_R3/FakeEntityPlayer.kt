@@ -1,5 +1,6 @@
 package com.minexd.rift.bukkit.spoof.v1_8_R3
 
+import com.minexd.rift.queue.Queue
 import com.mojang.authlib.GameProfile
 import net.minecraft.server.v1_8_R3.EntityPlayer
 import net.minecraft.server.v1_8_R3.MinecraftServer
@@ -12,6 +13,7 @@ class FakeEntityPlayer(gameProfile: GameProfile) : EntityPlayer(
 ) {
 
     private var ticked: Boolean = false
+    private var queue: Queue? = null
 
     init {
         playerConnection = FakePlayerConnection(this)

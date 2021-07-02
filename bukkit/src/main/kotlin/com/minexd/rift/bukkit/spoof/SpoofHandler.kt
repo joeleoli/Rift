@@ -12,6 +12,7 @@ import com.minexd.rift.bukkit.spoof.event.SpoofPlayerRemoveEvent
 import com.minexd.rift.bukkit.spoof.store.RedisBungeeSpoof
 import com.minexd.rift.bukkit.spoof.thread.SpoofThread
 import com.minexd.rift.bukkit.spoof.v1_8_R3.FakeEntityPlayer
+import com.minexd.rift.queue.QueueHandler
 import net.evilblock.cubed.serializers.Serializers
 import net.minecraft.server.v1_8_R3.MinecraftServer
 import org.bukkit.Bukkit
@@ -29,12 +30,16 @@ import kotlin.math.min
 
 object SpoofHandler {
 
+    const val ADD_SPOOFED_PLAYER = "AddSpoofedPlayer"
+    const val REMOVE_SPOOFED_PLAYER = "RemoveSpoofedPlayer"
+    const val SWITCH_SPOOFED_PLAYER = "SwitchSpoofedPlayer"
+
     var DEBUG: Boolean = false
 
     private var enabled: Boolean = false
     private var paused: Boolean = false
 
-    private var profiles: JsonArray = JsonArray()
+    private var profiles: MutableMap<UUID, JsonArray> = ConcurrentHashMap()
     private var fakePlayers: ConcurrentHashMap<UUID, FakeEntityPlayer> = ConcurrentHashMap()
 
     private var tasks: MutableList<BukkitTask> = arrayListOf()
@@ -43,9 +48,8 @@ object SpoofHandler {
         enabled = RiftBukkitPlugin.instance.readSpoofEnabled()
         paused = RiftBukkitPlugin.instance.readSpoofPaused()
 
-        if (enabled) {
-            profiles =
-                loadProfiles()
+        if (enabled || RiftBukkitPlugin.instance.readLoadSpoofProfiles()) {
+            profiles = loadProfiles()
         }
 
         Cubed.instance.redis.runRedisCommand { redis ->
@@ -86,10 +90,9 @@ object SpoofHandler {
         enabled = !enabled
 
         if (enabled) {
-            profiles =
-                loadProfiles()
+            profiles = loadProfiles()
         } else {
-            profiles = JsonArray()
+            profiles = ConcurrentHashMap()
 
             for (task in tasks) {
                 if (!task.isCancelled) {
@@ -107,8 +110,15 @@ object SpoofHandler {
         paused = !paused
     }
 
-    private fun loadProfiles(): JsonArray {
-        return Serializers.gson.fromJson(FileReader(File(Rift.instance.plugin.getDirectory(), "profiles.json")), JsonArray::class.java)
+    private fun loadProfiles(): ConcurrentHashMap<UUID, JsonArray> {
+        return ConcurrentHashMap<UUID, JsonArray>().also { map ->
+            val profilesFile = File(Rift.instance.plugin.getDirectory(), "profiles.json")
+            val profilesJson = Serializers.gson.fromJson(FileReader(profilesFile), JsonArray::class.java).map { it.asJsonArray }
+
+            for (element in profilesJson) {
+                map[UUID.fromString(element[1].asString)] = element
+            }
+        }
     }
 
     fun getRealPlayerCount(): Int {
@@ -176,24 +186,36 @@ object SpoofHandler {
             }
 
             val readCommands = RiftBukkitPlugin.instance.readSpoofActions()
-            if (readCommands.isEmpty()) {
-                return@sync
+            if (readCommands.isNotEmpty()) {
+                Tasks.delayed(40L) {
+                    val toPerform = arrayListOf<String>()
+                    toPerform.addAll(readCommands.filter { it.second >= 100.0 }.map { it.first })
+                    toPerform.add(Chance.weightedPick(readCommands) { it.second }.first)
+
+                    for (command in toPerform) {
+                        if (DEBUG) {
+                            debugLog("Executing command $command for ${player.name}")
+                        }
+
+                        try {
+                            player.bukkitEntity.performCommand(command)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
             }
 
-            Tasks.delayed(40L) {
-                val toPerform = arrayListOf<String>()
-                toPerform.addAll(readCommands.filter { it.second >= 100.0 }.map { it.first })
-                toPerform.add(Chance.weightedPick(readCommands) { it.second }.first)
+            val queueList = RiftBukkitPlugin.instance.readSpoofedQueues()
+            if (queueList.isNotEmpty()) {
+                val randomQueueId = Chance.weightedPick(queueList) { it.second }.first
+                println("random queue ID: $randomQueueId")
 
-                for (command in toPerform) {
-                    if (DEBUG) {
-                        debugLog("Executing command $command for ${player.name}")
-                    }
-
-                    try {
-                        player.bukkitEntity.performCommand(command)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+                val randomQueue = QueueHandler.getQueueById(randomQueueId)
+                if (randomQueue != null) {
+                    Tasks.asyncDelayed(40L) {
+                        println("forced ${player.bukkitEntity.name} to join ${randomQueue.id}")
+                        RiftBukkitPlugin.instance.joinQueue(player.bukkitEntity, randomQueue, true)
                     }
                 }
             }
@@ -233,12 +255,19 @@ object SpoofHandler {
         }
     }
 
+    fun areFakeProfilesLoaded(): Boolean {
+        return profiles.isNotEmpty()
+    }
+
+    fun getFakeProfile(uuid: UUID): JsonArray? {
+        return profiles[uuid]
+    }
+
     fun nextRandomProfile(): JsonArray? {
-        return if (profiles.size() == 0) {
+        return if (profiles.isEmpty()) {
             null
         } else {
-            profiles[ThreadLocalRandom.current().nextInt(
-                profiles.size())].asJsonArray
+            profiles.values.random()
         }
     }
 

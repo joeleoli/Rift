@@ -47,8 +47,10 @@ class Queue(
         return cachedEntries.firstOrNull { entry -> entry.uuid.toString() == player.toString() }
     }
 
-    fun addEntry(player: UUID, priority: Int) {
+    fun addEntry(player: UUID, priority: Int, spoofed: Boolean) {
         val entry = QueueEntry(player, priority)
+        entry.spoofed = spoofed
+
         cachedEntries.add(entry)
 
         recalculateEntryPositions()
@@ -145,12 +147,12 @@ class Queue(
 
     companion object {
         private val ENTRY_COMPARATOR = Comparator<QueueEntry> { o1, o2 ->
-            if (o2.priority > o1.priority) {
+            if (o1.priority > o2.priority) {
                 return@Comparator 1
             }
 
             if (o1.priority == o2.priority) {
-                return@Comparator (o2.insertTime - o1.insertTime).toInt()
+                return@Comparator (o1.insertTime - o2.insertTime).toInt()
             }
 
             return@Comparator -1

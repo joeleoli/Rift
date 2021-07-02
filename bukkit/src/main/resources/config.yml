@@ -15,6 +15,7 @@ disable-queue-join-command: true
 
 # Settings relating to the spoofing mechanic
 spoof:
+  load-profiles: true
   enabled: false
   paused: false
   multiplier: 2.0 # The factor to multiply the real player count by
@@ -24,6 +25,10 @@ spoof:
   interval: 20
   min-delay: 1000L
   max-delay: 3500L
+  # Settings relating to making fake players join queues
+  queues:
+    NONE: 0
+    prison: 100
   # Settings relating to making fake players look real
   realism:
     # Assigning ranks to fake players

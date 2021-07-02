@@ -21,6 +21,7 @@ import com.minexd.rift.bukkit.server.command.*
 import com.minexd.rift.bukkit.server.command.parameter.ServerParameterType
 import com.minexd.rift.bukkit.server.listener.ServerCountListeners
 import com.minexd.rift.bukkit.server.task.ServerUpdateTask
+import com.minexd.rift.bukkit.spoof.BukkitSpoofMessages
 import com.minexd.rift.bukkit.spoof.SpoofHandler
 import com.minexd.rift.bukkit.spoof.command.*
 import com.minexd.rift.bukkit.util.Constants
@@ -56,6 +57,7 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
             }
 
             Rift(this).initialLoad()
+            Rift.instance.mainChannel.registerListener(BukkitSpoofMessages)
 
             serverInstance = ServerHandler.loadOrCreateServer(readServerId(), server.port)
             println("This server is identified as ${serverInstance.id}:${serverInstance.port}")
@@ -148,7 +150,7 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
         CommandHandler.registerClass(SpoofRunCmdsCommand.javaClass)
         CommandHandler.registerClass(SpoofStatusCommand.javaClass)
         CommandHandler.registerClass(SpoofToggleCommand.javaClass)
-        CommandHandler.registerClass(SpoofToggleCommand.javaClass)
+        CommandHandler.registerClass(SpoofAddCommand.javaClass)
     }
 
     private fun loadListeners() {
@@ -181,12 +183,15 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
         return Reflection.getDeclaredField(Reflection.getClassSuppressed("org.spigotmc.SpigotConfig")!!, "bungee")!!.get(null) as Boolean
     }
 
-
     fun readSpoofEnabled(): Boolean {
         return config.getBoolean("spoof.enabled", false)
     }
 
     fun readSpoofPaused(): Boolean {
+        return config.getBoolean("spoof.paused", false)
+    }
+
+    fun readLoadSpoofProfiles(): Boolean {
         return config.getBoolean("spoof.paused", false)
     }
 
@@ -276,39 +281,64 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
         }
     }
 
+    fun readSpoofedQueues(): List<Pair<String, Double>> {
+        val queues = config.getConfigurationSection("spoof.queues").getKeys(false)
+        return queues.map { it to config.getDouble("spoof.queues.$it") }.toList()
+    }
+
     private fun findPriority(player: Player): Int {
         return QueueHandler.getPriority().entries.sortedBy { it.value }.reversed().firstOrNull() { player.hasPermission(it.key) }?.value ?: 0
     }
 
-    fun joinQueue(player: Player, queue: Queue) {
+    fun joinQueue(player: Player, queue: Queue, print: Boolean = false) {
+        println("attempting join queue")
         if (player.isOp || player.hasPermission(com.minexd.rift.bukkit.util.Permissions.JUMP_SERVER)) {
+            if (print) {
+                println("1")
+            }
+
             player.sendMessage("${Constants.QUEUE_CHAT_PREFIX}${ChatColor.GRAY}Sending you to ${ChatColor.YELLOW}${queue.route.displayName}${ChatColor.GRAY}!")
             BungeeUtil.sendToServer(player, queue.route.id)
             return
         }
 
         if (serverInstance.id == queue.route.id) {
+            if (print) {
+                println("2")
+            }
             player.sendMessage("${ChatColor.RED}You're already connected to that server!")
             return
         }
 
         if (readDisableQueues()) {
+            if (print) {
+                println("3")
+            }
             player.sendMessage("${ChatColor.RED}You can't join queues from this server!")
             return
         }
 
         val currentQueue = QueueHandler.getQueueByEntry(player.uniqueId)
         if (currentQueue != null) {
+            if (print) {
+                println("4")
+            }
             player.sendMessage("${ChatColor.RED}You are already in the ${queue.route.getColor()}${queue.route.displayName} ${ChatColor.RED}queue!")
             return
         }
 
         if (!queue.open) {
+            if (print) {
+                println("5")
+            }
             player.sendMessage("${ChatColor.RED}That queue is currently closed!")
             return
         }
+        if (print) {
+            println("6")
+        }
 
-        queue.addEntry(player.uniqueId, findPriority(player))
+        queue.addEntry(player.uniqueId, findPriority(player), SpoofHandler.isFakePlayer(player))
     }
 
     override fun getRedis(): Redis {
@@ -334,11 +364,9 @@ class RiftBukkitPlugin : JavaPlugin(), Plugin {
     }
 
     override fun onLeaveQueue(queue: Queue, entry: QueueEntry) {
-        Bukkit.getPlayer(entry.uuid).let {
-            if (it != null) {
-                Tasks.sync {
-                    PlayerLeaveQueueEvent(it, queue).call()
-                }
+        Bukkit.getPlayer(entry.uuid)?.let {
+            Tasks.sync {
+                PlayerLeaveQueueEvent(it, queue).call()
             }
         }
     }
